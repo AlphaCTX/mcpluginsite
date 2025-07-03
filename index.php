@@ -2,6 +2,15 @@
 // Public plugin list
 session_start();
 require 'db.php';
+require 'functions.php';
+
+$siteTitle = getSetting($pdo, 'site_title', 'Minecraft Plugins');
+$bannerImg = getSetting($pdo, 'banner', '');
+$featuredIds = [
+    getSetting($pdo, 'featured1'),
+    getSetting($pdo, 'featured2'),
+    getSetting($pdo, 'featured3')
+];
 
 $search = $_GET['q'] ?? '';
 if ($search) {
@@ -11,7 +20,18 @@ if ($search) {
     $stmt = $pdo->query('SELECT * FROM plugins ORDER BY created_at DESC');
 }
 $plugins = $stmt->fetchAll();
-$featured = $pdo->query('SELECT p.*, COUNT(d.id) as dl FROM plugins p LEFT JOIN downloads d ON d.plugin_id=p.id GROUP BY p.id ORDER BY dl DESC LIMIT 3')->fetchAll();
+$featured = [];
+foreach ($featuredIds as $fid) {
+    if ($fid) {
+        $stmtF = $pdo->prepare('SELECT * FROM plugins WHERE id=?');
+        $stmtF->execute([$fid]);
+        $row = $stmtF->fetch();
+        if ($row) $featured[] = $row;
+    }
+}
+if (empty($featured)) {
+    $featured = $pdo->query('SELECT * FROM plugins ORDER BY created_at DESC LIMIT 3')->fetchAll();
+}
 $recent = $pdo->query('SELECT * FROM plugins ORDER BY created_at DESC LIMIT 5')->fetchAll();
 $latestUpdate = $pdo->query('SELECT * FROM updates ORDER BY created_at DESC LIMIT 1')->fetch();
 ?>
@@ -19,7 +39,7 @@ $latestUpdate = $pdo->query('SELECT * FROM updates ORDER BY created_at DESC LIMI
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Minecraft Plugins</title>
+    <title><?= htmlspecialchars($siteTitle) ?></title>
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
 </head>
 <body class="container py-4">
@@ -36,6 +56,12 @@ $latestUpdate = $pdo->query('SELECT * FROM updates ORDER BY created_at DESC LIMI
     </div>
 </nav>
 
+<?php if ($bannerImg): ?>
+<div class="mb-4">
+    <img src="<?= htmlspecialchars($bannerImg) ?>" class="img-fluid w-100" alt="Banner">
+</div>
+<?php endif; ?>
+
 <div class="mb-4">
     <form class="d-flex" method="get">
         <input class="form-control me-2" type="search" name="q" placeholder="Search" value="<?= htmlspecialchars($search) ?>">
@@ -48,8 +74,8 @@ $latestUpdate = $pdo->query('SELECT * FROM updates ORDER BY created_at DESC LIMI
     <div class="row">
         <?php foreach ($featured as $f): ?>
         <div class="col-md-4">
-            <h5><?= htmlspecialchars($f['name']) ?></h5>
-            <p><?= htmlspecialchars($f['description']) ?></p>
+            <h5><a href="plugin.php?id=<?= $f['id'] ?>"><?= htmlspecialchars($f['name']) ?></a></h5>
+            <p><?= htmlspecialchars(substr($f['description'],0,100)) ?>...</p>
         </div>
         <?php endforeach; ?>
     </div>
@@ -67,7 +93,7 @@ $latestUpdate = $pdo->query('SELECT * FROM updates ORDER BY created_at DESC LIMI
     <h2>Recently updated Plugins</h2>
     <ul>
         <?php foreach ($recent as $r): ?>
-            <li><?= htmlspecialchars($r['name']) ?> (<?= htmlspecialchars($r['version']) ?>)</li>
+            <li><a href="plugin.php?id=<?= $r['id'] ?>"><?= htmlspecialchars($r['name']) ?></a> (<?= htmlspecialchars($r['version']) ?>)</li>
         <?php endforeach; ?>
     </ul>
 </div>
@@ -80,7 +106,7 @@ $latestUpdate = $pdo->query('SELECT * FROM updates ORDER BY created_at DESC LIMI
     <tbody>
         <?php foreach ($plugins as $p): ?>
         <tr>
-            <td><?= htmlspecialchars($p['name']) ?></td>
+            <td><a href="plugin.php?id=<?= $p['id'] ?>"><?= htmlspecialchars($p['name']) ?></a></td>
             <td><?= htmlspecialchars($p['version']) ?></td>
             <td><?= htmlspecialchars($p['mc_version']) ?></td>
             <td><?= nl2br(htmlspecialchars($p['description'])) ?></td>
@@ -90,6 +116,6 @@ $latestUpdate = $pdo->query('SELECT * FROM updates ORDER BY created_at DESC LIMI
     </tbody>
 </table>
 
-<footer class="text-center mt-4">&copy; <?= date('Y') ?> Plugin Site</footer>
+<footer class="text-center mt-4">&copy; <?= date('Y') ?> <?= htmlspecialchars($siteTitle) ?></footer>
 </body>
 </html>

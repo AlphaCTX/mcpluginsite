@@ -5,14 +5,16 @@ This project is a simple PHP/MySQL web application that allows an administrator 
 ## Features
 
 - **Admin login** with a fixed username and password defined in `config.php`.
-- **Plugin management** where the admin can upload new plugins, see download counts and remove plugins.
-- **Update posts** section to publish short updates that appear on the home page.
+- **Plugin management** where the admin can upload plugins, edit details and remove entries. Minecraft versions 1.16–1.21 can be selected per upload.
+- **Update posts** section with rich text editing to publish news that appears on the home page.
 - **Public plugin listing** with search capability and download tracking.
 - **Download statistics** chart on the admin dashboard.
 
 ## Files
 
 - `index.php` – public landing page showing featured plugins, the latest update and plugin search.
+- `plugin.php` – individual plugin page with description and download tabs.
+- `functions.php` – helpers for site configuration.
 - `admin.php` – administration dashboard for managing plugins and updates.
 - `upload.php` – AJAX endpoint for plugin uploads.
 - `download.php` – serves jar files and records downloads.
@@ -24,11 +26,12 @@ This project is a simple PHP/MySQL web application that allows an administrator 
 
 ## Database
 
-Run the queries in `schema.sql` to create the database schema. It contains the tables `plugins`, `downloads` and `updates`.
+Run the queries in `schema.sql` to create the database schema. It contains the tables `plugins`, `downloads`, `updates` and `settings`.
 
 ## Configuration
 
 Copy `config.sample.php` to `config.php` and adjust the database credentials and admin login details.
+Use the **Site config** section in the admin dashboard to change the site title, logo, favicon, banner image and featured plugins.
 
 ## Notes
 

@@ -10,7 +10,14 @@ if (!isset($_SESSION['admin'])) {
 
 $name = $_POST['name'] ?? '';
 $version = $_POST['version'] ?? '';
-$mc_version = $_POST['mc_version'] ?? '';
+$mc_version = '';
+if (isset($_POST['mc_version'])) {
+    if (is_array($_POST['mc_version'])) {
+        $mc_version = implode(',', $_POST['mc_version']);
+    } else {
+        $mc_version = $_POST['mc_version'];
+    }
+}
 $description = $_POST['description'] ?? '';
 $file = $_FILES['file'] ?? null;
 

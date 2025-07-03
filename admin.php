@@ -2,6 +2,7 @@
 // Admin login and dashboard
 session_start();
 require 'db.php';
+require 'functions.php';
 $config = include 'config.php';
 
 // Handle login
@@ -30,6 +31,12 @@ if (isset($_SESSION['admin'])) {
         header('Location: admin.php#updates');
         exit;
     }
+    if (isset($_POST['action']) && $_POST['action'] === 'edit_update') {
+        $stmt = $pdo->prepare('UPDATE updates SET title=?, content=? WHERE id=?');
+        $stmt->execute([$_POST['title'], $_POST['content'], $_POST['id']]);
+        header('Location: admin.php#updates');
+        exit;
+    }
     if (isset($_GET['del_update'])) {
         $stmt = $pdo->prepare('DELETE FROM updates WHERE id=?');
         $stmt->execute([$_GET['del_update']]);
@@ -40,6 +47,25 @@ if (isset($_SESSION['admin'])) {
     if (isset($_GET['del_plugin'])) {
         $stmt = $pdo->prepare('DELETE FROM plugins WHERE id=?');
         $stmt->execute([$_GET['del_plugin']]);
+        header('Location: admin.php#plugins');
+        exit;
+    }
+
+    if (isset($_POST['action']) && $_POST['action'] === 'save_config') {
+        setSetting($pdo, 'site_title', $_POST['site_title']);
+        setSetting($pdo, 'logo', $_POST['logo']);
+        setSetting($pdo, 'favicon', $_POST['favicon']);
+        setSetting($pdo, 'banner', $_POST['banner']);
+        setSetting($pdo, 'featured1', $_POST['featured1']);
+        setSetting($pdo, 'featured2', $_POST['featured2']);
+        setSetting($pdo, 'featured3', $_POST['featured3']);
+        header('Location: admin.php#config');
+        exit;
+    }
+
+    if (isset($_POST['action']) && $_POST['action'] === 'edit_plugin') {
+        $stmt = $pdo->prepare('UPDATE plugins SET name=?, version=?, mc_version=?, description=? WHERE id=?');
+        $stmt->execute([$_POST['name'], $_POST['version'], implode(',', $_POST['mc_version']), $_POST['description'], $_POST['id']]);
         header('Location: admin.php#plugins');
         exit;
     }
@@ -72,7 +98,10 @@ if (!isset($_SESSION['admin'])): ?>
     <meta charset="UTF-8">
     <title>Admin Dashboard</title>
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/summernote@0.8.18/dist/summernote-lite.min.css">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/summernote@0.8.18/dist/summernote-lite.min.js"></script>
 </head>
 <body class="container py-4">
 <nav class="navbar navbar-expand-lg navbar-light bg-light mb-4">
@@ -94,13 +123,45 @@ if (!isset($_SESSION['admin'])): ?>
 <form id="uploadForm" enctype="multipart/form-data">
     <div class="mb-2"><input class="form-control" name="name" placeholder="Name" required></div>
     <div class="mb-2"><input class="form-control" name="version" placeholder="Version" required></div>
-    <div class="mb-2"><input class="form-control" name="mc_version" placeholder="MC Version" required></div>
+    <div class="mb-2">
+        <select class="form-select" name="mc_version[]" multiple required>
+            <?php for($v=16;$v<=21;$v++): $ver="1.".$v; ?>
+            <option value="<?= $ver ?>"><?= $ver ?></option>
+            <?php endfor; ?>
+        </select>
+    </div>
     <div class="mb-2"><textarea class="form-control" name="description" placeholder="Description" required></textarea></div>
     <div class="mb-2"><input type="file" name="file" accept=".jar" required></div>
     <div class="progress mb-2"><div id="bar" class="progress-bar" style="width:0%"></div></div>
     <button class="btn btn-primary" type="submit">Upload</button>
 </form>
 <div id="uploadMsg" class="mt-2"></div>
+
+<?php if(isset($_GET['edit_plugin'])): 
+    $stmt = $pdo->prepare('SELECT * FROM plugins WHERE id=?');
+    $stmt->execute([$_GET['edit_plugin']]);
+    $edit = $stmt->fetch();
+    if($edit): ?>
+<hr>
+<h2>Edit Plugin</h2>
+<form method="post">
+    <input type="hidden" name="action" value="edit_plugin">
+    <input type="hidden" name="id" value="<?= $edit['id'] ?>">
+    <div class="mb-2"><input class="form-control" name="name" value="<?= htmlspecialchars($edit['name']) ?>" required></div>
+    <div class="mb-2"><input class="form-control" name="version" value="<?= htmlspecialchars($edit['version']) ?>" required></div>
+    <div class="mb-2">
+        <select class="form-select" name="mc_version[]" multiple required>
+            <?php $sel = explode(',', $edit['mc_version']);
+            for($v=16;$v<=21;$v++): $ver="1.".$v; ?>
+            <option value="<?= $ver ?>" <?= in_array($ver,$sel)?'selected':'' ?>><?= $ver ?></option>
+            <?php endfor; ?>
+        </select>
+    </div>
+    <div class="mb-2"><textarea class="form-control" name="description" required><?= htmlspecialchars($edit['description']) ?></textarea></div>
+    <button class="btn btn-primary" type="submit">Save</button>
+</form>
+<?php endif; endif; ?>
+
 <hr>
 <h2 class="mt-4">Plugins</h2>
 <table class="table" id="pluginTable">
@@ -109,26 +170,62 @@ if (!isset($_SESSION['admin'])): ?>
 <?php
 $stmt = $pdo->query('SELECT p.*, (SELECT COUNT(*) FROM downloads d WHERE d.plugin_id=p.id) as dl FROM plugins p');
 foreach ($stmt as $row) {
-    echo '<tr><td>'.htmlspecialchars($row['name']).'</td><td>'.htmlspecialchars($row['version']).'</td><td>'.$row['dl'].'</td><td><a class="btn btn-sm btn-danger" href="admin.php?del_plugin='.$row['id'].'">Delete</a></td></tr>';
+    echo '<tr><td>'.htmlspecialchars($row['name']).'</td><td>'.htmlspecialchars($row['version']).'</td><td>'.$row['dl'].'</td><td><a class="btn btn-sm btn-secondary me-1" href="admin.php?edit_plugin='.$row['id'].'#plugins">Edit</a><a class="btn btn-sm btn-danger" href="admin.php?del_plugin='.$row['id'].'">Delete</a></td></tr>';
 }
 ?>
 </tbody>
 </table>
 <hr>
+<h2 id="config" class="mt-4">Site config</h2>
+<?php
+    $site_title = getSetting($pdo,'site_title');
+    $logo = getSetting($pdo,'logo');
+    $favicon = getSetting($pdo,'favicon');
+    $banner = getSetting($pdo,'banner');
+    $featured1 = getSetting($pdo,'featured1');
+    $featured2 = getSetting($pdo,'featured2');
+    $featured3 = getSetting($pdo,'featured3');
+?>
+<form method="post" class="mb-3">
+    <input type="hidden" name="action" value="save_config">
+    <div class="mb-2"><input class="form-control" name="site_title" value="<?= htmlspecialchars($site_title) ?>" placeholder="Site title"></div>
+    <div class="mb-2"><input class="form-control" name="logo" value="<?= htmlspecialchars($logo) ?>" placeholder="Logo URL"></div>
+    <div class="mb-2"><input class="form-control" name="favicon" value="<?= htmlspecialchars($favicon) ?>" placeholder="Favicon URL"></div>
+    <div class="mb-2"><input class="form-control" name="banner" value="<?= htmlspecialchars($banner) ?>" placeholder="Banner image URL"></div>
+    <div class="mb-2"><input class="form-control" name="featured1" value="<?= htmlspecialchars($featured1) ?>" placeholder="Featured plugin ID 1"></div>
+    <div class="mb-2"><input class="form-control" name="featured2" value="<?= htmlspecialchars($featured2) ?>" placeholder="Featured plugin ID 2"></div>
+    <div class="mb-2"><input class="form-control" name="featured3" value="<?= htmlspecialchars($featured3) ?>" placeholder="Featured plugin ID 3"></div>
+    <button class="btn btn-primary" type="submit">Save</button>
+</form>
+<hr>
 <h2 id="updates" class="mt-4">Updates</h2>
+<?php if(isset($_GET['edit_update'])):
+    $stmt = $pdo->prepare('SELECT * FROM updates WHERE id=?');
+    $stmt->execute([$_GET['edit_update']]);
+    $up = $stmt->fetch();
+    if($up): ?>
+<form method="post" class="mb-3">
+    <input type="hidden" name="action" value="edit_update">
+    <input type="hidden" name="id" value="<?= $up['id'] ?>">
+    <div class="mb-2"><input class="form-control" name="title" value="<?= htmlspecialchars($up['title']) ?>" required></div>
+    <div class="mb-2"><textarea class="form-control" id="updateContent" name="content" required><?= htmlspecialchars($up['content']) ?></textarea></div>
+    <button class="btn btn-primary" type="submit">Save</button>
+</form>
+<?php endif; else: ?>
 <form method="post" class="mb-3">
     <input type="hidden" name="action" value="add_update">
     <div class="mb-2"><input class="form-control" name="title" placeholder="Title" required></div>
-    <div class="mb-2"><textarea class="form-control" name="content" placeholder="Content" required></textarea></div>
+    <div class="mb-2"><textarea class="form-control" id="updateContent" name="content" placeholder="Content" required></textarea></div>
     <button class="btn btn-primary" type="submit">Add update</button>
 </form>
+<?php endif; ?>
 <table class="table">
     <thead><tr><th>Title</th><th>Created</th><th></th></tr></thead>
     <tbody>
     <?php
     $updates = $pdo->query('SELECT * FROM updates ORDER BY created_at DESC')->fetchAll();
     foreach ($updates as $u) {
-        echo '<tr><td>'.htmlspecialchars($u['title']).'</td><td>'.$u['created_at'].'</td><td><a href="admin.php?del_update='.$u['id'].'" class="btn btn-sm btn-danger">Delete</a></td></tr>';
+        echo '<tr><td>'.htmlspecialchars($u['title']).'</td><td>'.$u['created_at'].'</td><td><a href="admin.php?edit_update='.$u['id'].'#updates" class="btn btn-sm btn-secondary me-1">Edit</a><a href="admin.php?del_update='.$u['id'].'" class="btn btn-sm btn-danger">Delete</a></td></tr>';
     }
     ?>
     </tbody>
@@ -159,6 +256,9 @@ fetch('stats.php').then(r=>r.json()).then(data=>{
         data:{labels:data.labels,datasets:[{label:'Downloads',data:data.counts}]},
     });
 });
+if(document.getElementById('updateContent')) {
+    $('#updateContent').summernote({height:200});
+}
 </script>
 </body>
 </html>
