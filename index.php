@@ -44,9 +44,16 @@ $latestUpdate = $pdo->query('SELECT * FROM updates ORDER BY created_at DESC LIMI
     <meta charset="UTF-8">
     <title><?= htmlspecialchars($siteTitle) ?></title>
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
+<style>
+.page-bg{background:linear-gradient(#5d8e76,#436b58);padding-top:70px;}
+.content-box{background:#fff;background:rgba(255,255,255,0.95);box-shadow:0 0 10px rgba(0,0,0,0.2);border-radius:.5rem;transition:box-shadow .3s;}
+.content-box:hover{box-shadow:0 0 20px rgba(0,0,0,0.3);}
+.banner-img{width:100%;height:300px;object-fit:cover;}
+.navbar.fixed-top{box-shadow:0 0 5px rgba(0,0,0,0.2);}
+</style>
 </head>
-<body class="container py-4" style="background-color:#5d8e76;">
-<nav class="navbar navbar-expand-lg navbar-light bg-light mb-4">
+<body class="py-4 page-bg">
+<nav class="navbar navbar-expand-lg navbar-light bg-light fixed-top">
     <div class="container-fluid">
         <a class="navbar-brand d-flex align-items-center" href="index.php">
             <?php if ($logoImg): ?>
@@ -64,9 +71,11 @@ $latestUpdate = $pdo->query('SELECT * FROM updates ORDER BY created_at DESC LIMI
     </div>
 </nav>
 
+<div class="container">
+
 <?php if ($bannerImg): ?>
 <div class="mb-4 position-relative">
-    <img src="<?= htmlspecialchars($bannerImg) ?>" class="img-fluid w-100" alt="Banner">
+    <img src="<?= htmlspecialchars($bannerImg) ?>" class="banner-img" alt="Banner">
     <div class="position-absolute top-50 start-50 translate-middle">
         <div class="bg-white bg-opacity-75 p-3 rounded">
         <div id="featuredCarousel" class="carousel slide" data-bs-ride="carousel">
@@ -87,7 +96,7 @@ $latestUpdate = $pdo->query('SELECT * FROM updates ORDER BY created_at DESC LIMI
 </div>
 <?php endif; ?>
 
-<div class="bg-light p-4 rounded mb-4">
+<div class="content-box p-4 mb-4">
 
 
 <?php if ($latestUpdate): ?>
@@ -124,6 +133,8 @@ $latestUpdate = $pdo->query('SELECT * FROM updates ORDER BY created_at DESC LIMI
         <?php endforeach; ?>
     </tbody>
 </table>
+</div>
+
 </div>
 
 <footer class="text-center mt-4">&copy; <?= date('Y') ?> <?= htmlspecialchars($siteTitle) ?></footer>

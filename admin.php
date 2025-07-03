@@ -135,8 +135,14 @@ if (!isset($_SESSION['admin'])): ?>
     <meta charset="UTF-8">
     <title>Admin Login</title>
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
+    <style>
+    .page-bg{background:linear-gradient(#5d8e76,#436b58);padding-top:70px;}
+    .content-box{background:#fff;background:rgba(255,255,255,0.95);box-shadow:0 0 10px rgba(0,0,0,0.2);border-radius:.5rem;transition:box-shadow .3s;}
+    .content-box:hover{box-shadow:0 0 20px rgba(0,0,0,0.3);}
+    .navbar.fixed-top{box-shadow:0 0 5px rgba(0,0,0,0.2);}
+    </style>
 </head>
-<body class="d-flex justify-content-center align-items-center vh-100" style="background-color:#5d8e76;">
+<body class="d-flex justify-content-center align-items-center vh-100 page-bg">
 <div class="card p-4" style="min-width:300px;">
     <div class="text-center mb-2">
         <?php if ($siteLogo): ?>
@@ -167,12 +173,18 @@ $logo = getSetting($pdo, 'logo');
     <title>Admin Dashboard</title>
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/summernote@0.8.18/dist/summernote-lite.min.css">
+    <style>
+    .page-bg{background:linear-gradient(#5d8e76,#436b58);padding-top:70px;}
+    .content-box{background:#fff;background:rgba(255,255,255,0.95);box-shadow:0 0 10px rgba(0,0,0,0.2);border-radius:.5rem;transition:box-shadow .3s;}
+    .content-box:hover{box-shadow:0 0 20px rgba(0,0,0,0.3);}
+    .navbar.fixed-top{box-shadow:0 0 5px rgba(0,0,0,0.2);}
+    </style>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/summernote@0.8.18/dist/summernote-lite.min.js"></script>
 </head>
-<body class="container py-4" style="background-color:#5d8e76;">
-<nav class="navbar navbar-expand-lg navbar-light bg-light mb-4">
+<body class="py-4 page-bg">
+<nav class="navbar navbar-expand-lg navbar-light bg-light fixed-top">
     <div class="container-fluid">
         <a class="navbar-brand" href="#">
             <?php if ($logo): ?>
@@ -190,7 +202,9 @@ $logo = getSetting($pdo, 'logo');
         </div>
     </div>
 </nav>
-<div class="bg-light p-4">
+
+<div class="container">
+<div class="content-box p-4">
 <h1>Welcome, admin</h1>
 <hr>
 <?php if($page==='plugins'): ?>
