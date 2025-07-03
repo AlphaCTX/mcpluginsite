@@ -4,6 +4,7 @@ session_start();
 require 'db.php';
 require 'functions.php';
 $config = include 'config.php';
+$isAjax = isset($_SERVER['HTTP_X_REQUESTED_WITH']);
 
 // Handle login
 if (isset($_POST['username'], $_POST['password'])) {
@@ -28,18 +29,21 @@ if (isset($_SESSION['admin'])) {
     if (isset($_POST['action']) && $_POST['action'] === 'add_update') {
         $stmt = $pdo->prepare('INSERT INTO updates (title, content, created_at) VALUES (?,?,NOW())');
         $stmt->execute([$_POST['title'], $_POST['content']]);
+        if ($isAjax) { exit('OK'); }
         header('Location: admin.php#updates');
         exit;
     }
     if (isset($_POST['action']) && $_POST['action'] === 'edit_update') {
         $stmt = $pdo->prepare('UPDATE updates SET title=?, content=? WHERE id=?');
         $stmt->execute([$_POST['title'], $_POST['content'], $_POST['id']]);
+        if ($isAjax) { exit('OK'); }
         header('Location: admin.php#updates');
         exit;
     }
     if (isset($_GET['del_update'])) {
         $stmt = $pdo->prepare('DELETE FROM updates WHERE id=?');
         $stmt->execute([$_GET['del_update']]);
+        if ($isAjax) { exit('OK'); }
         header('Location: admin.php#updates');
         exit;
     }
@@ -47,6 +51,7 @@ if (isset($_SESSION['admin'])) {
     if (isset($_GET['del_plugin'])) {
         $stmt = $pdo->prepare('DELETE FROM plugins WHERE id=?');
         $stmt->execute([$_GET['del_plugin']]);
+        if ($isAjax) { exit('OK'); }
         header('Location: admin.php#plugins');
         exit;
     }
@@ -63,6 +68,7 @@ if (isset($_SESSION['admin'])) {
         setSetting($pdo, 'featured1', $_POST['featured1']);
         setSetting($pdo, 'featured2', $_POST['featured2']);
         setSetting($pdo, 'featured3', $_POST['featured3']);
+        if ($isAjax) { exit('OK'); }
         header('Location: admin.php#config');
         exit;
     }
@@ -70,6 +76,7 @@ if (isset($_SESSION['admin'])) {
     if (isset($_POST['action']) && $_POST['action'] === 'edit_plugin') {
         $stmt = $pdo->prepare('UPDATE plugins SET name=?, description=? WHERE id=?');
         $stmt->execute([$_POST['name'], $_POST['description'], $_POST['id']]);
+        if ($isAjax) { exit('OK'); }
         header('Location: admin.php#plugins');
         exit;
     }
@@ -83,7 +90,7 @@ if (!isset($_SESSION['admin'])): ?>
     <title>Admin Login</title>
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
 </head>
-<body class="container py-4">
+<body class="container py-4" style="background-color:#5d8e76;">
 <h1>Admin Login</h1>
 <?php if (!empty($error)) echo '<div class="alert alert-danger">'.$error.'</div>'; ?>
 <form method="post">
@@ -95,6 +102,7 @@ if (!isset($_SESSION['admin'])): ?>
 </html>
 <?php else:
 // Dashboard
+$logo = getSetting($pdo, 'logo');
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -107,10 +115,14 @@ if (!isset($_SESSION['admin'])): ?>
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/summernote@0.8.18/dist/summernote-lite.min.js"></script>
 </head>
-<body class="container py-4">
+<body class="container py-4" style="background-color:#5d8e76;">
 <nav class="navbar navbar-expand-lg navbar-light bg-light mb-4">
     <div class="container-fluid">
-        <a class="navbar-brand" href="#">Admin</a>
+        <a class="navbar-brand" href="#">
+            <?php if ($logo): ?>
+            <img src="<?= htmlspecialchars($logo) ?>" alt="Logo" style="height:40px;">
+            <?php else: ?>Admin<?php endif; ?>
+        </a>
         <div class="collapse navbar-collapse">
             <ul class="navbar-nav me-auto mb-2 mb-lg-0">
                 <li class="nav-item"><a class="nav-link" href="#updates">Updates</a></li>
@@ -192,7 +204,7 @@ foreach ($stmt as $row) {
     $featured2 = getSetting($pdo,'featured2');
     $featured3 = getSetting($pdo,'featured3');
 ?>
-<form method="post" class="mb-3" enctype="multipart/form-data">
+<form method="post" class="mb-3 ajax" enctype="multipart/form-data">
     <input type="hidden" name="action" value="save_config">
     <div class="mb-2"><input class="form-control" name="site_title" value="<?= htmlspecialchars($site_title) ?>" placeholder="Site title"></div>
     <div class="mb-2">Logo: <input type="file" name="logo_file" class="form-control"></div>
@@ -231,7 +243,7 @@ foreach ($stmt as $row) {
     $stmt->execute([$_GET['edit_update']]);
     $up = $stmt->fetch();
     if($up): ?>
-<form method="post" class="mb-3">
+<form method="post" class="mb-3 ajax">
     <input type="hidden" name="action" value="edit_update">
     <input type="hidden" name="id" value="<?= $up['id'] ?>">
     <div class="mb-2"><input class="form-control" name="title" value="<?= htmlspecialchars($up['title']) ?>" required></div>
@@ -239,7 +251,7 @@ foreach ($stmt as $row) {
     <button class="btn btn-primary" type="submit">Save</button>
 </form>
 <?php endif; else: ?>
-<form method="post" class="mb-3">
+<form method="post" class="mb-3 ajax">
     <input type="hidden" name="action" value="add_update">
     <div class="mb-2"><input class="form-control" name="title" placeholder="Title" required></div>
     <div class="mb-2"><textarea class="form-control" id="updateContent" name="content" placeholder="Content" required></textarea></div>
@@ -272,6 +284,7 @@ form.addEventListener('submit',e=>{
     xhr.onload=()=>{
         document.getElementById('uploadMsg').innerText=xhr.responseText;
         document.getElementById('bar').style.width='0%';
+        if(xhr.status==200) location.reload();
     };
     xhr.send(new FormData(form));
 });
@@ -292,6 +305,13 @@ if(document.getElementById('pluginDesc')) {
 if(document.getElementById('pluginEditDesc')) {
     $('#pluginEditDesc').summernote({height:150});
 }
+document.querySelectorAll('form.ajax').forEach(f=>{
+    f.addEventListener('submit',ev=>{
+        ev.preventDefault();
+        fetch('admin.php',{method:'POST',body:new FormData(f),headers:{'X-Requested-With':'XMLHttpRequest'}})
+            .then(()=>location.reload());
+    });
+});
 </script>
 </body>
 </html>

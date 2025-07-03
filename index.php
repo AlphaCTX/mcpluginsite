@@ -6,6 +6,7 @@ require 'functions.php';
 
 $siteTitle = getSetting($pdo, 'site_title', 'Minecraft Plugins');
 $bannerImg = getSetting($pdo, 'banner', '');
+$logoImg = getSetting($pdo, 'logo', '');
 $featuredIds = [
     getSetting($pdo, 'featured1'),
     getSetting($pdo, 'featured2'),
@@ -44,10 +45,14 @@ $latestUpdate = $pdo->query('SELECT * FROM updates ORDER BY created_at DESC LIMI
     <title><?= htmlspecialchars($siteTitle) ?></title>
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
 </head>
-<body class="container py-4">
+<body class="container py-4" style="background-color:#5d8e76;">
 <nav class="navbar navbar-expand-lg navbar-light bg-light mb-4">
     <div class="container-fluid">
-        <a class="navbar-brand" href="index.php">Home</a>
+        <a class="navbar-brand" href="index.php">
+            <?php if ($logoImg): ?>
+            <img src="<?= htmlspecialchars($logoImg) ?>" alt="Logo" style="height:40px;">
+            <?php else: ?>Home<?php endif; ?>
+        </a>
         <div class="collapse navbar-collapse">
             <ul class="navbar-nav me-auto mb-2 mb-lg-0">
                 <li class="nav-item"><a class="nav-link" href="plugins.php">Plugins</a></li>
@@ -77,7 +82,7 @@ $latestUpdate = $pdo->query('SELECT * FROM updates ORDER BY created_at DESC LIMI
         <?php foreach ($featured as $f): ?>
         <div class="col-md-4">
             <h5><a href="plugin.php?id=<?= $f['id'] ?>"><?= htmlspecialchars($f['name']) ?></a></h5>
-            <p><?= htmlspecialchars(substr($f['description'],0,100)) ?>...</p>
+            <p><?= $f['description'] ?></p>
         </div>
         <?php endforeach; ?>
     </div>
@@ -87,7 +92,7 @@ $latestUpdate = $pdo->query('SELECT * FROM updates ORDER BY created_at DESC LIMI
 <div id="updates" class="mb-4">
     <h2>Latest update</h2>
     <h4><?= htmlspecialchars($latestUpdate['title']) ?></h4>
-    <p><?= nl2br(htmlspecialchars(substr($latestUpdate['content'],0,200))) ?></p>
+    <div><?= $latestUpdate['content'] ?></div>
 </div>
 <?php endif; ?>
 
@@ -111,7 +116,7 @@ $latestUpdate = $pdo->query('SELECT * FROM updates ORDER BY created_at DESC LIMI
             <td><a href="plugin.php?id=<?= $p['id'] ?>"><?= htmlspecialchars($p['name']) ?></a></td>
             <td><?= htmlspecialchars($p['version']) ?></td>
             <td><?= htmlspecialchars($p['mc_version']) ?></td>
-            <td><?= nl2br(htmlspecialchars($p['description'])) ?></td>
+            <td><?= $p['description'] ?></td>
             <td><a class="btn btn-primary" href="download.php?id=<?= $p['id'] ?>">Download</a></td>
         </tr>
         <?php endforeach; ?>

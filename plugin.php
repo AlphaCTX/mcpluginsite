@@ -14,6 +14,7 @@ if (!$plugin) {
 }
 
 $siteTitle = getSetting($pdo, 'site_title', 'Minecraft Plugins');
+$logoImg = getSetting($pdo, 'logo', '');
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -28,10 +29,14 @@ $siteTitle = getSetting($pdo, 'site_title', 'Minecraft Plugins');
     }
     </script>
 </head>
-<body class="container py-4">
+<body class="container py-4" style="background-color:#5d8e76;">
 <nav class="navbar navbar-expand-lg navbar-light bg-light mb-4">
     <div class="container-fluid">
-        <a class="navbar-brand" href="index.php">Home</a>
+        <a class="navbar-brand" href="index.php">
+            <?php if ($logoImg): ?>
+            <img src="<?= htmlspecialchars($logoImg) ?>" alt="Logo" style="height:40px;">
+            <?php else: ?>Home<?php endif; ?>
+        </a>
         <div class="collapse navbar-collapse">
             <ul class="navbar-nav me-auto mb-2 mb-lg-0">
                 <li class="nav-item"><a class="nav-link" href="plugins.php">Plugins</a></li>

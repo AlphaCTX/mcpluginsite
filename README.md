@@ -9,6 +9,7 @@ This project is a simple PHP/MySQL web application that allows an administrator 
 - **Update posts** section with rich text editing to publish news that appears on the home page.
 - **Public plugin listing** with search capability and download tracking.
 - **Download statistics** chart on the admin dashboard.
+- **Dynamic admin** interface that refreshes automatically after changes.
 
 ## Files
 
@@ -17,6 +18,7 @@ This project is a simple PHP/MySQL web application that allows an administrator 
 - `functions.php` – helpers for site configuration.
 - `admin.php` – administration dashboard for managing plugins and updates.
 - `upload.php` – AJAX endpoint for plugin uploads.
+  Supports files up to 20MB.
 - `download.php` – serves jar files and records downloads.
 - `stats.php` – returns JSON statistics for the chart.
 - `db.php` – database connection helper.

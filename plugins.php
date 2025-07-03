@@ -4,6 +4,7 @@ require 'db.php';
 require 'functions.php';
 
 $siteTitle = getSetting($pdo, 'site_title', 'Minecraft Plugins');
+$logoImg = getSetting($pdo, 'logo', '');
 $search = $_GET['q'] ?? '';
 $latestFields = '(SELECT version FROM plugin_versions v2 WHERE v2.plugin_id=p.id ORDER BY v2.created_at DESC LIMIT 1) AS version,
     (SELECT mc_version FROM plugin_versions v3 WHERE v3.plugin_id=p.id ORDER BY v3.created_at DESC LIMIT 1) AS mc_version';
@@ -22,10 +23,14 @@ $plugins = $stmt->fetchAll();
     <title>Plugins - <?= htmlspecialchars($siteTitle) ?></title>
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
 </head>
-<body class="container py-4">
+<body class="container py-4" style="background-color:#5d8e76;">
 <nav class="navbar navbar-expand-lg navbar-light bg-light mb-4">
     <div class="container-fluid">
-        <a class="navbar-brand" href="index.php">Home</a>
+        <a class="navbar-brand" href="index.php">
+            <?php if ($logoImg): ?>
+            <img src="<?= htmlspecialchars($logoImg) ?>" alt="Logo" style="height:40px;">
+            <?php else: ?>Home<?php endif; ?>
+        </a>
         <div class="collapse navbar-collapse">
             <ul class="navbar-nav me-auto mb-2 mb-lg-0">
                 <li class="nav-item"><a class="nav-link" href="plugins.php">Plugins</a></li>
@@ -52,7 +57,7 @@ $plugins = $stmt->fetchAll();
             <td><a href="plugin.php?id=<?= $p['id'] ?>"><?= htmlspecialchars($p['name']) ?></a></td>
             <td><?= htmlspecialchars($p['version']) ?></td>
             <td><?= htmlspecialchars($p['mc_version']) ?></td>
-            <td><?= nl2br(htmlspecialchars($p['description'])) ?></td>
+            <td><?= $p['description'] ?></td>
             <td><a class="btn btn-primary" href="plugin.php?id=<?= $p['id'] ?>">View</a></td>
         </tr>
         <?php endforeach; ?>
