@@ -34,7 +34,7 @@ Run the queries in `schema.sql` to create the database schema. It contains the t
 ## Configuration
 
 Copy `config.sample.php` to `config.php` and adjust the database credentials and admin login details.
-Use the **Site config** section in the admin dashboard to change the site title and upload a logo, favicon or banner image. Featured plugins can be chosen from the existing list.
+Use the **Site config** section in the admin dashboard to change the site title and upload a logo, favicon or banner image. Featured plugins can be chosen from the existing list. The footer can display custom links by listing them as `label|url` pairs, one per line.
 
 ## Notes
 
@@ -45,7 +45,7 @@ This project is intentionally minimal and meant as a starting point. Feel free t
  - **Banner** image with a slideshow of three featured plugins
 - **Latest update** section showing the newest news post
 - **Recently updated** list of the five newest plugin versions
-- **Footer** with site title and year
+- **Footer** with navigation and optional custom links
 - **Admin dashboard** with a light panel for creating plugins and managing their versions
 - Plugin and update pages use the same light panel styling
 - Plugin lists show each logo next to the name

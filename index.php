@@ -77,7 +77,8 @@ $latestUpdate = $pdo->query('SELECT * FROM updates ORDER BY created_at DESC LIMI
 <div class="container-fluid px-0">
 <div class="mb-4 position-relative">
     <img src="<?= htmlspecialchars($bannerImg) ?>" class="banner-img" alt="Banner">
-    <div class="position-absolute top-50 start-50 translate-middle">
+    <div class="position-absolute top-50 start-50 translate-middle text-center" style="width:90%;">
+        <h2 class="text-white fw-bold mb-3">Featured</h2>
         <div class="bg-white bg-opacity-75 p-3 rounded">
         <div id="featuredCarousel" class="carousel slide" data-bs-ride="carousel">
             <div class="carousel-inner">
@@ -132,27 +133,25 @@ $latestUpdate = $pdo->query('SELECT * FROM updates ORDER BY created_at DESC LIMI
 </div>
 
 <h2><?= $search ? 'Search results' : 'Latest Plugins' ?></h2>
-<table class="table">
-    <thead>
-        <tr><th>Name</th><th>Version</th><th>MC Version</th><th>Description</th><th></th></tr>
-    </thead>
-    <tbody>
-        <?php foreach ($plugins as $p): ?>
-        <tr>
-            <td><a href="plugin.php?id=<?= $p['id'] ?>"><?= htmlspecialchars($p['name']) ?></a></td>
-            <td><?= htmlspecialchars($p['version']) ?></td>
-            <td><?= htmlspecialchars($p['mc_version']) ?></td>
-            <td><?= htmlspecialchars($p['short_description']) ?></td>
-            <td><a class="btn btn-primary" href="download.php?id=<?= $p['id'] ?>">Download</a></td>
-        </tr>
-        <?php endforeach; ?>
-    </tbody>
-</table>
+<ul class="list-group">
+<?php foreach ($plugins as $p): ?>
+    <li class="list-group-item d-flex align-items-start">
+        <?php if($p['logo']): ?>
+        <img src="<?= htmlspecialchars($p['logo']) ?>" alt="logo" style="height:40px;" class="me-2">
+        <?php endif; ?>
+        <div class="flex-grow-1">
+            <a class="fw-bold text-decoration-none" href="plugin.php?id=<?= $p['id'] ?>"><?= htmlspecialchars($p['name']) ?></a>
+            <span class="text-muted">(<?= htmlspecialchars($p['version']) ?>)</span>
+            <div><?= htmlspecialchars($p['short_description']) ?></div>
+        </div>
+    </li>
+<?php endforeach; ?>
+</ul>
 </div>
 
 </div>
 
-<footer class="text-center mt-4">&copy; <?= date('Y') ?> <?= htmlspecialchars($siteTitle) ?></footer>
+<?php renderFooter($pdo); ?>
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>

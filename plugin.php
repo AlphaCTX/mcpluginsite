@@ -34,7 +34,7 @@ $logoImg = getSetting($pdo, 'logo', '');
     <title><?= htmlspecialchars($plugin['name']) ?> - <?= htmlspecialchars($siteTitle) ?></title>
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
     <style>
-    .page-bg{background:linear-gradient(#5d8e76,#436b58);padding-top:70px;}
+    .page-bg{background:linear-gradient(#5d8e76,#436b58);padding-top:66px;}
     .content-box{background:#fff;background:rgba(255,255,255,0.95);box-shadow:0 0 10px rgba(0,0,0,0.2);border-radius:.5rem;transition:box-shadow .3s;}
     .content-box:hover{box-shadow:0 0 20px rgba(0,0,0,0.3);}
     .navbar.fixed-top{box-shadow:0 0 5px rgba(0,0,0,0.2);}
@@ -135,7 +135,7 @@ document.addEventListener('DOMContentLoaded',highlightLatest);
 </div>
 </div>
 </div>
-<footer class="text-center mt-4">&copy; <?= date('Y') ?> <?= htmlspecialchars($siteTitle) ?></footer>
+<?php renderFooter($pdo); ?>
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>

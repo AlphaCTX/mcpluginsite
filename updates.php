@@ -52,6 +52,6 @@ $updates = $pdo->query('SELECT * FROM updates ORDER BY created_at DESC')->fetchA
 </div>
 
 </div>
-<footer class="text-center mt-4">&copy; <?= date('Y') ?> <?= htmlspecialchars($siteTitle) ?></footer>
+<?php renderFooter($pdo); ?>
 </body>
 </html>

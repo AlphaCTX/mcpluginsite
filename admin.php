@@ -65,6 +65,7 @@ if (isset($_SESSION['admin'])) {
 
     if (isset($_POST['action']) && $_POST['action'] === 'save_config') {
         setSetting($pdo, 'site_title', $_POST['site_title']);
+        setSetting($pdo, 'other_links', $_POST['other_links'] ?? '');
         foreach (['logo_file' => 'logo', 'favicon_file' => 'favicon', 'banner_file' => 'banner'] as $f => $k) {
             if (isset($_FILES[$f]) && $_FILES[$f]['error'] === UPLOAD_ERR_OK) {
                 $path = 'uploads/'.time().'_'.basename($_FILES[$f]['name']);
@@ -203,7 +204,7 @@ $logo = getSetting($pdo, 'logo');
     </div>
 </nav>
 
-<div class="container">
+<div class="container mt-4">
 <div class="content-box p-4">
 <h1>Welcome, admin</h1>
 <hr>
@@ -321,6 +322,7 @@ foreach ($stmt as $row) {
     $featured1 = getSetting($pdo,'featured1');
     $featured2 = getSetting($pdo,'featured2');
     $featured3 = getSetting($pdo,'featured3');
+    $otherLinks = getSetting($pdo,'other_links');
 ?>
 <form method="post" class="mb-3 ajax" enctype="multipart/form-data">
     <input type="hidden" name="action" value="save_config">
@@ -351,6 +353,10 @@ foreach ($stmt as $row) {
             <option value="<?= $pl['id'] ?>" <?= $featured3==$pl['id']?'selected':'' ?>><?= htmlspecialchars($pl['name']) ?></option>
             <?php endforeach; ?>
         </select>
+    </div>
+    <div class="mb-2">
+        <textarea class="form-control" name="other_links" placeholder="Label|URL per line" rows="3"><?= htmlspecialchars($otherLinks) ?></textarea>
+        <small class="form-text text-muted">Other links for the footer. One per line as <code>label|url</code>.</small>
     </div>
 <button class="btn btn-primary" type="submit">Save</button>
 </form>
@@ -481,6 +487,7 @@ document.querySelectorAll('form.ajax').forEach(f=>{
 });
 </script>
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+<?php renderFooter($pdo); ?>
 </div>
 </body>
 </html>
