@@ -137,7 +137,8 @@ if (!isset($_SESSION['admin'])): ?>
     <title>Admin Login</title>
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
     <style>
-    .page-bg{background:linear-gradient(#5d8e76,#436b58);padding-top:66px;}
+    .page-bg{background:linear-gradient(#5d8e76,#436b58);min-height:100vh;display:flex;flex-direction:column;}
+    .with-navbar{padding-top:90px;}
     .content-box{background:#fff;background:rgba(255,255,255,0.95);box-shadow:0 0 10px rgba(0,0,0,0.2);border-radius:.5rem;transition:box-shadow .3s;}
     .content-box:hover{box-shadow:0 0 20px rgba(0,0,0,0.3);}
     .navbar.fixed-top{box-shadow:0 0 5px rgba(0,0,0,0.2);}
@@ -175,7 +176,8 @@ $logo = getSetting($pdo, 'logo');
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/summernote@0.8.18/dist/summernote-lite.min.css">
     <style>
-    .page-bg{background:linear-gradient(#5d8e76,#436b58);padding-top:66px;}
+    .page-bg{background:linear-gradient(#5d8e76,#436b58);min-height:100vh;display:flex;flex-direction:column;}
+    .with-navbar{padding-top:90px;}
     .content-box{background:#fff;background:rgba(255,255,255,0.95);box-shadow:0 0 10px rgba(0,0,0,0.2);border-radius:.5rem;transition:box-shadow .3s;}
     .content-box:hover{box-shadow:0 0 20px rgba(0,0,0,0.3);}
     .navbar.fixed-top{box-shadow:0 0 5px rgba(0,0,0,0.2);}
@@ -184,7 +186,7 @@ $logo = getSetting($pdo, 'logo');
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/summernote@0.8.18/dist/summernote-lite.min.js"></script>
 </head>
-<body class="py-4 page-bg">
+<body class="page-bg with-navbar">
 <nav class="navbar navbar-expand-lg navbar-light bg-light fixed-top">
     <div class="container-fluid">
         <a class="navbar-brand" href="#">
@@ -203,6 +205,8 @@ $logo = getSetting($pdo, 'logo');
         </div>
     </div>
 </nav>
+
+<main class="flex-grow-1 py-4">
 
 <div class="container mt-4">
 <div class="content-box p-4">
@@ -487,8 +491,10 @@ document.querySelectorAll('form.ajax').forEach(f=>{
 });
 </script>
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-<?php renderFooter($pdo); ?>
 </div>
+</div>
+</main>
+<?php renderFooter($pdo); ?>
 </body>
 </html>
 <?php endif; ?>
