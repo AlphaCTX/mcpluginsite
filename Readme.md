@@ -34,3 +34,23 @@ Geef:
 - SQL-scripts voor aanmaken van de tabellen `plugins` en `downloads`.
 - Voorbeeld van .env of configbestand.
 - Commentaar in de code die uitlegt wat er gebeurt.
+
+
+site indeling en overzicht:
+- hoofdpagina mag mooier worden met volgende indeling:
+1) topbar menu met Home, Plugins (overzicht en zoek functie voor plugins op naam, versie etc), Updates
+2) Banner met een blok er in "Featured" waar ik in admin pagina 3 plugins kan instellen
+4) Update waar de laatste update wordt getoond
+6) Recently updated Plugins waar de laatste 5 plugins worden getoond
+7) Footer
+
+- Admin pagina moet ik de volgende mee kunnen doen en moet er zo uit zien:
+1) Topbar menu met knoppen: Updates, Plugins, site config, logout
+2) In Updates blog posts kunnen plaatsen/bewerken/verwijderen met rich text editor
+3) Plugins kunnen toevoegen/bewerken/verwijderen/ & versies kunnen toevoegen/bewerken/verwijderen en (meerdere) werkende minecraft versies kunnen kiezen voor de versie.
+4) In site config moet ik de favicon, logo, titel, banner kunnen aanpassen
+
+- plugin pagina ziet er als volgt uit:
+1) gebruikt zelfde topbar menu als index.php
+2) bovenaan afbeeldingen met daar onder een klein menu met daarin (description, downloads (minecraft versie kan je hier selecteren buiten het ovezicht))
+3) onder het klein menu zie je afhankelijk wat je selecteerd de beschrijving of de overzicht van de downloads per minecraft versie en de filter opties
