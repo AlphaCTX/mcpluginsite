@@ -11,7 +11,7 @@ if (isset($_POST['username'], $_POST['password'])) {
         header('Location: admin.php');
         exit;
     } else {
-        $error = 'Ongeldige login';
+        $error = 'Invalid login';
     }
 }
 
@@ -20,6 +20,29 @@ if (isset($_GET['logout'])) {
     session_destroy();
     header('Location: admin.php');
     exit;
+}
+
+// Handle update actions when admin is logged in
+if (isset($_SESSION['admin'])) {
+    if (isset($_POST['action']) && $_POST['action'] === 'add_update') {
+        $stmt = $pdo->prepare('INSERT INTO updates (title, content, created_at) VALUES (?,?,NOW())');
+        $stmt->execute([$_POST['title'], $_POST['content']]);
+        header('Location: admin.php#updates');
+        exit;
+    }
+    if (isset($_GET['del_update'])) {
+        $stmt = $pdo->prepare('DELETE FROM updates WHERE id=?');
+        $stmt->execute([$_GET['del_update']]);
+        header('Location: admin.php#updates');
+        exit;
+    }
+
+    if (isset($_GET['del_plugin'])) {
+        $stmt = $pdo->prepare('DELETE FROM plugins WHERE id=?');
+        $stmt->execute([$_GET['del_plugin']]);
+        header('Location: admin.php#plugins');
+        exit;
+    }
 }
 
 if (!isset($_SESSION['admin'])): ?>
@@ -52,34 +75,65 @@ if (!isset($_SESSION['admin'])): ?>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
 <body class="container py-4">
-<h1>Welkom, admin</h1>
-<a class="btn btn-secondary" href="admin.php?logout=1">Logout</a>
+<nav class="navbar navbar-expand-lg navbar-light bg-light mb-4">
+    <div class="container-fluid">
+        <a class="navbar-brand" href="#">Admin</a>
+        <div class="collapse navbar-collapse">
+            <ul class="navbar-nav me-auto mb-2 mb-lg-0">
+                <li class="nav-item"><a class="nav-link" href="#updates">Updates</a></li>
+                <li class="nav-item"><a class="nav-link" href="#plugins">Plugins</a></li>
+                <li class="nav-item"><a class="nav-link" href="#config">Site config</a></li>
+                <li class="nav-item"><a class="nav-link" href="admin.php?logout=1">Logout</a></li>
+            </ul>
+        </div>
+    </div>
+</nav>
+<h1>Welcome, admin</h1>
 <hr>
-<h2>Plugin upload</h2>
+<h2 id="plugins">Plugin upload</h2>
 <form id="uploadForm" enctype="multipart/form-data">
-    <div class="mb-2"><input class="form-control" name="name" placeholder="Naam" required></div>
-    <div class="mb-2"><input class="form-control" name="version" placeholder="Versie" required></div>
-    <div class="mb-2"><input class="form-control" name="mc_version" placeholder="MC Versie" required></div>
-    <div class="mb-2"><textarea class="form-control" name="description" placeholder="Beschrijving" required></textarea></div>
+    <div class="mb-2"><input class="form-control" name="name" placeholder="Name" required></div>
+    <div class="mb-2"><input class="form-control" name="version" placeholder="Version" required></div>
+    <div class="mb-2"><input class="form-control" name="mc_version" placeholder="MC Version" required></div>
+    <div class="mb-2"><textarea class="form-control" name="description" placeholder="Description" required></textarea></div>
     <div class="mb-2"><input type="file" name="file" accept=".jar" required></div>
     <div class="progress mb-2"><div id="bar" class="progress-bar" style="width:0%"></div></div>
     <button class="btn btn-primary" type="submit">Upload</button>
 </form>
 <div id="uploadMsg" class="mt-2"></div>
 <hr>
-<h2>Plugins</h2>
+<h2 class="mt-4">Plugins</h2>
 <table class="table" id="pluginTable">
-<thead><tr><th>Naam</th><th>Versie</th><th>Downloads</th></tr></thead>
+<thead><tr><th>Name</th><th>Version</th><th>Downloads</th><th></th></tr></thead>
 <tbody>
 <?php
 $stmt = $pdo->query('SELECT p.*, (SELECT COUNT(*) FROM downloads d WHERE d.plugin_id=p.id) as dl FROM plugins p');
 foreach ($stmt as $row) {
-    echo '<tr><td>'.htmlspecialchars($row['name']).'</td><td>'.htmlspecialchars($row['version']).'</td><td>'.$row['dl'].'</td></tr>';
+    echo '<tr><td>'.htmlspecialchars($row['name']).'</td><td>'.htmlspecialchars($row['version']).'</td><td>'.$row['dl'].'</td><td><a class="btn btn-sm btn-danger" href="admin.php?del_plugin='.$row['id'].'">Delete</a></td></tr>';
 }
 ?>
 </tbody>
 </table>
-<h2>Download statistieken</h2>
+<hr>
+<h2 id="updates" class="mt-4">Updates</h2>
+<form method="post" class="mb-3">
+    <input type="hidden" name="action" value="add_update">
+    <div class="mb-2"><input class="form-control" name="title" placeholder="Title" required></div>
+    <div class="mb-2"><textarea class="form-control" name="content" placeholder="Content" required></textarea></div>
+    <button class="btn btn-primary" type="submit">Add update</button>
+</form>
+<table class="table">
+    <thead><tr><th>Title</th><th>Created</th><th></th></tr></thead>
+    <tbody>
+    <?php
+    $updates = $pdo->query('SELECT * FROM updates ORDER BY created_at DESC')->fetchAll();
+    foreach ($updates as $u) {
+        echo '<tr><td>'.htmlspecialchars($u['title']).'</td><td>'.$u['created_at'].'</td><td><a href="admin.php?del_update='.$u['id'].'" class="btn btn-sm btn-danger">Delete</a></td></tr>';
+    }
+    ?>
+    </tbody>
+</table>
+<h2>Download statistics</h2>
 <canvas id="chart" width="400" height="200"></canvas>
 <script>
 // Upload with progress bar

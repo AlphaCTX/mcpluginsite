@@ -15,3 +15,10 @@ CREATE TABLE downloads (
     downloaded_at DATETIME,
     FOREIGN KEY (plugin_id) REFERENCES plugins(id) ON DELETE CASCADE
 );
+
+CREATE TABLE updates (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    title VARCHAR(255),
+    content TEXT,
+    created_at DATETIME
+);
