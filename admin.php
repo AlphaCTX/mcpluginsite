@@ -1,8 +1,13 @@
 <?php
 // Admin login and dashboard
 session_start();
+ini_set('display_errors', 1);
+error_reporting(E_ALL);
 require 'db.php';
 require 'functions.php';
+if (!file_exists('config.php')) {
+    die('Missing config.php. Copy config.sample.php to config.php.');
+}
 $config = include 'config.php';
 $isAjax = isset($_SERVER['HTTP_X_REQUESTED_WITH']);
 $page = $_GET['page'] ?? 'plugins';
@@ -284,7 +289,6 @@ foreach ($stmt as $row) {
 ?>
 </tbody>
 </table>
-<?php endif; ?>
 <hr>
 <?php elseif($page==='config'): ?>
 <h2>Site config</h2>
@@ -329,7 +333,6 @@ foreach ($stmt as $row) {
     </div>
 <button class="btn btn-primary" type="submit">Save</button>
 </form>
-<?php endif; ?>
 <hr>
 <?php elseif($page==='updates'): ?>
 <h2>Updates</h2>
@@ -364,7 +367,6 @@ foreach ($stmt as $row) {
     ?>
     </tbody>
 </table>
-<?php endif; ?>
 <?php elseif($page==='stats'): ?>
 <h2>Download statistics</h2>
 <canvas id="chart" width="400" height="200"></canvas>

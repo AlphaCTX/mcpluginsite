@@ -10,6 +10,7 @@ This project is a simple PHP/MySQL web application that allows an administrator 
 - **Public plugin listing** with search capability and download tracking.
 - **Download statistics** chart on the admin dashboard.
 - **Dynamic admin** interface that refreshes automatically after changes.
+- **Error reporting** in the admin area for easier debugging.
 
 ## Files
 
