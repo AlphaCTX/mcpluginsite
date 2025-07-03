@@ -13,6 +13,17 @@ if (!$plugin) {
     exit;
 }
 
+// Load versions early so we can build Minecraft filter options
+$vstmt = $pdo->prepare('SELECT * FROM plugin_versions WHERE plugin_id=? ORDER BY created_at DESC');
+$vstmt->execute([$id]);
+$versions = $vstmt->fetchAll();
+$mcOpts = [];
+foreach ($versions as $row) {
+    foreach (explode(',', $row['mc_version']) as $mv) {
+        $mcOpts[$mv] = true;
+    }
+}
+
 $siteTitle = getSetting($pdo, 'site_title', 'Minecraft Plugins');
 $logoImg = getSetting($pdo, 'logo', '');
 ?>
@@ -80,18 +91,13 @@ function filterMC(v){
     <table class="table">
     <thead><tr><th>Version</th><th>MC Version</th><th></th></tr></thead>
     <tbody>
-        <?php
-        $stmt = $pdo->prepare('SELECT * FROM plugin_versions WHERE plugin_id=? ORDER BY created_at DESC');
-        $stmt->execute([$plugin['id']]);
-        $versions = $stmt->fetchAll();
-        $mcOpts = [];
-        foreach ($versions as $row) {
-            foreach (explode(',', $row['mc_version']) as $mv) $mcOpts[$mv] = true;
-        }
-        foreach ($versions as $row) {
-            echo '<tr data-mc="'.htmlspecialchars($row['mc_version']).'"><td>'.htmlspecialchars($row['version']).'</td><td>'.htmlspecialchars($row['mc_version']).'</td><td><a class="btn btn-primary" href="download.php?id='.$row['id'].'">Download</a></td></tr>';
-        }
-        ?>
+        <?php foreach ($versions as $row): ?>
+        <tr data-mc="<?= htmlspecialchars($row['mc_version']) ?>">
+            <td><?= htmlspecialchars($row['version']) ?></td>
+            <td><?= htmlspecialchars($row['mc_version']) ?></td>
+            <td><a class="btn btn-primary" href="download.php?id=<?= $row['id'] ?>">Download</a></td>
+        </tr>
+        <?php endforeach; ?>
     </tbody>
     </table>
 </div>
