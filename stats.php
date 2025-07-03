@@ -3,7 +3,24 @@
 session_start();
 require 'db.php';
 
-$rows = $pdo->query("SELECT DATE(downloaded_at) as d, COUNT(*) as c FROM downloads WHERE downloaded_at >= DATE_SUB(CURDATE(), INTERVAL 7 DAY) GROUP BY d ORDER BY d")->fetchAll();
+$sql = "SELECT DATE(d.downloaded_at) as d, COUNT(*) as c FROM downloads d JOIN plugin_versions v ON d.version_id=v.id WHERE d.downloaded_at >= DATE_SUB(CURDATE(), INTERVAL 7 DAY)";
+$params = [];
+if (!empty($_GET['plugin'])) {
+    $sql .= " AND v.plugin_id=?";
+    $params[] = (int)$_GET['plugin'];
+}
+if (!empty($_GET['version'])) {
+    $sql .= " AND v.id=?";
+    $params[] = (int)$_GET['version'];
+}
+if (!empty($_GET['mc_version'])) {
+    $sql .= " AND v.mc_version LIKE ?";
+    $params[] = '%' . $_GET['mc_version'] . '%';
+}
+$sql .= " GROUP BY d ORDER BY d";
+$stmt = $pdo->prepare($sql);
+$stmt->execute($params);
+$rows = $stmt->fetchAll();
 
 $labels = [];
 $counts = [];

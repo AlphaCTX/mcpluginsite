@@ -1,4 +1,4 @@
 Options -Indexes
-<FilesMatch "\.php$">
-    SetHandler application/x-httpd-php
-</FilesMatch>
+# Ensure PHP files are handled by the PHP interpreter instead of being served as downloads
+AddHandler application/x-httpd-php .php
+AddType application/x-httpd-php .php
