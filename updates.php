@@ -30,6 +30,7 @@ $updates = $pdo->query('SELECT * FROM updates ORDER BY created_at DESC')->fetchA
         </div>
     </div>
 </nav>
+<div class="bg-light p-4 rounded">
 <h1>Updates</h1>
 <?php foreach ($updates as $u): ?>
 <div class="mb-4">
@@ -38,6 +39,7 @@ $updates = $pdo->query('SELECT * FROM updates ORDER BY created_at DESC')->fetchA
     <small class="text-muted"><?= $u['created_at'] ?></small>
 </div>
 <?php endforeach; ?>
+</div>
 <footer class="text-center mt-4">&copy; <?= date('Y') ?> <?= htmlspecialchars($siteTitle) ?></footer>
 </body>
 </html>

@@ -47,3 +47,7 @@ This project is intentionally minimal and meant as a starting point. Feel free t
 - **Recently updated** list of the five newest plugin versions
 - **Footer** with site title and year
 - **Admin dashboard** with a light panel for creating plugins and managing their versions
+- Plugin and update pages use the same light panel styling
+- Plugin lists show each logo next to the name
+- Statistics page can filter by plugin, version and Minecraft version
+- Admin login screen shows the site logo

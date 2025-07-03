@@ -41,6 +41,7 @@ $plugins = $stmt->fetchAll();
         </div>
     </div>
 </nav>
+<div class="bg-light p-4 rounded">
 <h1>Plugins</h1>
 <div class="mb-4">
     <form class="d-flex" method="get">
@@ -55,7 +56,12 @@ $plugins = $stmt->fetchAll();
     <tbody>
         <?php foreach ($plugins as $p): ?>
         <tr>
-            <td><a href="plugin.php?id=<?= $p['id'] ?>"><?= htmlspecialchars($p['name']) ?></a></td>
+            <td>
+                <?php if($p['logo']): ?>
+                <img src="<?= htmlspecialchars($p['logo']) ?>" alt="logo" style="height:40px;" class="me-2">
+                <?php endif; ?>
+                <a class="text-decoration-none fw-bold text-dark" href="plugin.php?id=<?= $p['id'] ?>"><?= htmlspecialchars($p['name']) ?></a>
+            </td>
             <td><?= htmlspecialchars($p['version']) ?></td>
             <td><?= htmlspecialchars($p['mc_version']) ?></td>
             <td><?= htmlspecialchars($p['short_description']) ?></td>
@@ -64,6 +70,7 @@ $plugins = $stmt->fetchAll();
         <?php endforeach; ?>
     </tbody>
 </table>
+</div>
 <footer class="text-center mt-4">&copy; <?= date('Y') ?> <?= htmlspecialchars($siteTitle) ?></footer>
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 </body>

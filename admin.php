@@ -5,6 +5,7 @@ ini_set('display_errors', 1);
 error_reporting(E_ALL);
 require 'db.php';
 require 'functions.php';
+$siteLogo = getSetting($pdo, 'logo');
 if (!file_exists('config.php')) {
     die('Missing config.php. Copy config.sample.php to config.php.');
 }
@@ -137,6 +138,11 @@ if (!isset($_SESSION['admin'])): ?>
 </head>
 <body class="d-flex justify-content-center align-items-center vh-100" style="background-color:#5d8e76;">
 <div class="card p-4" style="min-width:300px;">
+    <div class="text-center mb-2">
+        <?php if ($siteLogo): ?>
+        <img src="<?= htmlspecialchars($siteLogo) ?>" alt="Logo" style="height:60px;">
+        <?php endif; ?>
+    </div>
     <h2 class="mb-3 text-center">Admin Login</h2>
     <?php if (!empty($error)) echo '<div class="alert alert-danger">'.$error.'</div>'; ?>
     <form method="post">
@@ -284,7 +290,8 @@ $stmt = $pdo->query('SELECT p.id,p.name,
     (SELECT COUNT(*) FROM downloads d JOIN plugin_versions v2 ON d.version_id=v2.id WHERE v2.plugin_id=p.id) as dl
     FROM plugins p');
 foreach ($stmt as $row) {
-    echo '<tr><td>'.htmlspecialchars($row['name']).'</td><td>'.htmlspecialchars($row['version']).'</td><td>'.$row['dl'].'</td><td><a class="btn btn-sm btn-secondary me-1" href="admin.php?page=plugins&edit_plugin='.$row['id'].'">Edit</a><a class="btn btn-sm btn-secondary me-1" href="admin.php?page=plugins&manage_plugin='.$row['id'].'">Versions</a><a class="btn btn-sm btn-danger" href="admin.php?del_plugin='.$row['id'].'">Delete</a></td></tr>';
+    $ver = $row['version'] ?? '';
+    echo '<tr><td>'.htmlspecialchars($row['name']).'</td><td>'.htmlspecialchars($ver).'</td><td>'.$row['dl'].'</td><td><a class="btn btn-sm btn-secondary me-1" href="admin.php?page=plugins&edit_plugin='.$row['id'].'">Edit</a><a class="btn btn-sm btn-secondary me-1" href="admin.php?page=plugins&manage_plugin='.$row['id'].'">Versions</a><a class="btn btn-sm btn-danger" href="admin.php?del_plugin='.$row['id'].'">Delete</a></td></tr>';
 }
 ?>
 </tbody>
@@ -369,6 +376,36 @@ foreach ($stmt as $row) {
 </table>
 <?php elseif($page==='stats'): ?>
 <h2>Download statistics</h2>
+<?php
+    $plOpts = $pdo->query('SELECT id,name FROM plugins ORDER BY name')->fetchAll();
+    $verOpts = $pdo->query('SELECT id,version FROM plugin_versions ORDER BY created_at DESC')->fetchAll();
+?>
+<form id="statsFilter" class="row g-2 mb-3">
+    <div class="col">
+        <select id="filterPlugin" name="plugin" class="form-select">
+            <option value="">All plugins</option>
+            <?php foreach($plOpts as $pl): ?>
+            <option value="<?= $pl['id'] ?>"><?= htmlspecialchars($pl['name']) ?></option>
+            <?php endforeach; ?>
+        </select>
+    </div>
+    <div class="col">
+        <select id="filterVersion" name="version" class="form-select">
+            <option value="">All versions</option>
+            <?php foreach($verOpts as $v): ?>
+            <option value="<?= $v['id'] ?>"><?= htmlspecialchars($v['version']) ?></option>
+            <?php endforeach; ?>
+        </select>
+    </div>
+    <div class="col">
+        <select id="filterMC" name="mc_version" class="form-select">
+            <option value="">All MC versions</option>
+            <?php for($v=16;$v<=21;$v++): $mv='1.'.$v; ?>
+            <option value="<?= $mv ?>"><?= $mv ?></option>
+            <?php endfor; ?>
+        </select>
+    </div>
+</form>
 <canvas id="chart" width="400" height="200"></canvas>
 <?php endif; ?>
 <script>
@@ -391,13 +428,27 @@ if(vform){
     });
 }
 
-// Chart data via AJAX
-fetch('stats.php').then(r=>r.json()).then(data=>{
-    new Chart(document.getElementById('chart'),{
-        type:'line',
-        data:{labels:data.labels,datasets:[{label:'Downloads',data:data.counts}]},
+// Chart data with filters
+let chart;
+function loadStats(){
+    const params=new URLSearchParams(new FormData(document.getElementById('statsFilter')));
+    fetch('stats.php?'+params.toString()).then(r=>r.json()).then(data=>{
+        if(!chart){
+            chart=new Chart(document.getElementById('chart'),{
+                type:'line',
+                data:{labels:data.labels,datasets:[{label:'Downloads',data:data.counts}]}
+            });
+        }else{
+            chart.data.labels=data.labels;
+            chart.data.datasets[0].data=data.counts;
+            chart.update();
+        }
     });
-});
+}
+if(document.getElementById('statsFilter')){
+    document.getElementById('statsFilter').addEventListener('change',loadStats);
+    loadStats();
+}
 if(document.getElementById('updateContent')) {
     $('#updateContent').summernote({height:200});
 }

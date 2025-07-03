@@ -53,16 +53,14 @@ function filterMC(v){
         </div>
     </div>
 </nav>
+<div class="bg-light p-4 rounded">
 <h1 class="mb-3 d-flex align-items-center">
     <?php if ($plugin['logo']): ?>
     <img src="<?= htmlspecialchars($plugin['logo']) ?>" alt="logo" style="height:60px;" class="me-2">
     <?php endif; ?>
     <?= htmlspecialchars($plugin['name']) ?>
 </h1>
-<p class="mb-3 text-white-50 fw-bold"><?= htmlspecialchars($plugin['short_description']) ?></p>
-<div class="mb-3">
-    <img src="<?= htmlspecialchars(getSetting($pdo,'banner','')) ?>" class="img-fluid" alt="">
-</div>
+<p class="mb-3 text-muted fw-bold"><?= htmlspecialchars($plugin['short_description']) ?></p>
 <ul class="nav nav-tabs mb-3">
     <li class="nav-item"><a class="nav-link active" href="#" onclick="showTab('desc');return false;">Description</a></li>
     <li class="nav-item"><a class="nav-link" href="#" onclick="showTab('dl');return false;">Downloads</a></li>
@@ -96,6 +94,7 @@ function filterMC(v){
         ?>
     </tbody>
     </table>
+</div>
 </div>
 <footer class="text-center mt-4">&copy; <?= date('Y') ?> <?= htmlspecialchars($siteTitle) ?></footer>
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
