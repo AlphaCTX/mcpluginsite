@@ -5,7 +5,7 @@ This project is a simple PHP/MySQL web application that allows an administrator 
 ## Features
 
 - **Admin login** with a fixed username and password defined in `config.php`.
-- **Plugin management** with rich text descriptions. Existing plugins can receive new versions and each version supports Minecraft 1.16–1.21.
+- **Plugin management** with rich text descriptions. Plugins have a logo, short description and long description. Existing plugins can receive multiple versions with Minecraft 1.16–1.21 support and changelogs.
 - **Update posts** section with rich text editing to publish news that appears on the home page.
 - **Public plugin listing** with search capability and download tracking.
 - **Download statistics** chart on the admin dashboard.
@@ -41,7 +41,8 @@ This project is intentionally minimal and meant as a starting point. Feel free t
 
 ### Site layout
 - **Top bar** with links to Home, Plugins and Updates
-- **Banner** image with a "Featured" block showing three selected plugins
+ - **Banner** image with a slideshow of three featured plugins
 - **Latest update** section showing the newest news post
 - **Recently updated** list of the five newest plugin versions
 - **Footer** with site title and year
+- **Admin dashboard** with a light panel for creating plugins and managing their versions

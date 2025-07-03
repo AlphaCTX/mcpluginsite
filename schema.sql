@@ -2,7 +2,9 @@
 CREATE TABLE plugins (
     id INT AUTO_INCREMENT PRIMARY KEY,
     name VARCHAR(255),
+    short_description VARCHAR(255),
     description TEXT,
+    logo VARCHAR(255),
     created_at DATETIME
 );
 
@@ -11,6 +13,7 @@ CREATE TABLE plugin_versions (
     plugin_id INT,
     version VARCHAR(50),
     mc_version VARCHAR(50),
+    changelog TEXT,
     file_path VARCHAR(255),
     created_at DATETIME,
     FOREIGN KEY (plugin_id) REFERENCES plugins(id) ON DELETE CASCADE

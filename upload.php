@@ -11,8 +11,8 @@ if (!isset($_SESSION['admin'])) {
 }
 
 $plugin_id = isset($_POST['plugin_id']) ? (int)$_POST['plugin_id'] : 0;
-$name = $_POST['name'] ?? '';
 $version = $_POST['version'] ?? '';
+$changelog = $_POST['changelog'] ?? '';
 $mc_version = '';
 if (isset($_POST['mc_version'])) {
     if (is_array($_POST['mc_version'])) {
@@ -21,7 +21,6 @@ if (isset($_POST['mc_version'])) {
         $mc_version = $_POST['mc_version'];
     }
 }
-$description = $_POST['description'] ?? '';
 $file = $_FILES['file'] ?? null;
 
 if (!$file || $file['error'] !== UPLOAD_ERR_OK) {
@@ -40,17 +39,14 @@ if ($file['size'] > 20 * 1024 * 1024) {
 $target = 'uploads/'.time().'_'.basename($file['name']);
 move_uploaded_file($file['tmp_name'], $target);
 
-if (!$plugin_id) {
-    $stmt = $pdo->prepare('INSERT INTO plugins (name, description, created_at) VALUES (?,?,NOW())');
-    $stmt->execute([$name, $description]);
-    $plugin_id = $pdo->lastInsertId();
-} else if ($description) {
-    $stmt = $pdo->prepare('UPDATE plugins SET description=? WHERE id=?');
-    $stmt->execute([$description, $plugin_id]);
+$pluginExists = $pdo->prepare('SELECT id FROM plugins WHERE id=?');
+$pluginExists->execute([$plugin_id]);
+if (!$pluginExists->fetch()) {
+    exit('Invalid plugin');
 }
 
-$stmt = $pdo->prepare('INSERT INTO plugin_versions (plugin_id, version, mc_version, file_path, created_at) VALUES (?,?,?,?,NOW())');
-$stmt->execute([$plugin_id, $version, $mc_version, $target]);
+$stmt = $pdo->prepare('INSERT INTO plugin_versions (plugin_id, version, mc_version, changelog, file_path, created_at) VALUES (?,?,?,?,?,NOW())');
+$stmt->execute([$plugin_id, $version, $mc_version, $changelog, $target]);
 
 echo 'Upload successful';
 ?>
