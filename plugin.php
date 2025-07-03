@@ -34,8 +34,8 @@ $siteTitle = getSetting($pdo, 'site_title', 'Minecraft Plugins');
         <a class="navbar-brand" href="index.php">Home</a>
         <div class="collapse navbar-collapse">
             <ul class="navbar-nav me-auto mb-2 mb-lg-0">
-                <li class="nav-item"><a class="nav-link" href="index.php">Plugins</a></li>
-                <li class="nav-item"><a class="nav-link" href="index.php#updates">Updates</a></li>
+                <li class="nav-item"><a class="nav-link" href="plugins.php">Plugins</a></li>
+                <li class="nav-item"><a class="nav-link" href="updates.php">Updates</a></li>
             </ul>
             <a class="btn btn-outline-secondary" href="admin.php">Admin</a>
         </div>
@@ -50,15 +50,15 @@ $siteTitle = getSetting($pdo, 'site_title', 'Minecraft Plugins');
     <li class="nav-item"><a class="nav-link" href="#" onclick="showTab('dl');return false;">Downloads</a></li>
 </ul>
 <div id="desc">
-    <p><?= nl2br(htmlspecialchars($plugin['description'])) ?></p>
+    <?= $plugin['description'] ?>
 </div>
 <div id="downloads" style="display:none;">
     <table class="table">
     <thead><tr><th>Version</th><th>MC Version</th><th></th></tr></thead>
     <tbody>
         <?php
-        $stmt = $pdo->prepare('SELECT * FROM plugins WHERE name=? ORDER BY created_at DESC');
-        $stmt->execute([$plugin['name']]);
+        $stmt = $pdo->prepare('SELECT * FROM plugin_versions WHERE plugin_id=? ORDER BY created_at DESC');
+        $stmt->execute([$plugin['id']]);
         foreach ($stmt as $row) {
             echo '<tr><td>'.htmlspecialchars($row['version']).'</td><td>'.htmlspecialchars($row['mc_version']).'</td><td><a class="btn btn-primary" href="download.php?id='.$row['id'].'">Download</a></td></tr>';
         }

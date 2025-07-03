@@ -8,6 +8,7 @@ if (!isset($_SESSION['admin'])) {
     exit('Forbidden');
 }
 
+$plugin_id = isset($_POST['plugin_id']) ? (int)$_POST['plugin_id'] : 0;
 $name = $_POST['name'] ?? '';
 $version = $_POST['version'] ?? '';
 $mc_version = '';
@@ -33,11 +34,21 @@ if ($file['size'] > 5 * 1024 * 1024) {
     exit('Bestand te groot');
 }
 
+
 $target = 'uploads/'.time().'_'.basename($file['name']);
 move_uploaded_file($file['tmp_name'], $target);
 
-$stmt = $pdo->prepare('INSERT INTO plugins (name, version, mc_version, description, file_path, created_at) VALUES (?,?,?,?,?,NOW())');
-$stmt->execute([$name, $version, $mc_version, $description, $target]);
+if (!$plugin_id) {
+    $stmt = $pdo->prepare('INSERT INTO plugins (name, description, created_at) VALUES (?,?,NOW())');
+    $stmt->execute([$name, $description]);
+    $plugin_id = $pdo->lastInsertId();
+} else if ($description) {
+    $stmt = $pdo->prepare('UPDATE plugins SET description=? WHERE id=?');
+    $stmt->execute([$description, $plugin_id]);
+}
 
-echo 'Upload succesvol';
+$stmt = $pdo->prepare('INSERT INTO plugin_versions (plugin_id, version, mc_version, file_path, created_at) VALUES (?,?,?,?,NOW())');
+$stmt->execute([$plugin_id, $version, $mc_version, $target]);
+
+echo 'Upload successful';
 ?>

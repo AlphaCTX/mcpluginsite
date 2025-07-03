@@ -1,17 +1,9 @@
 <?php
-// Public plugin list
 session_start();
 require 'db.php';
 require 'functions.php';
 
 $siteTitle = getSetting($pdo, 'site_title', 'Minecraft Plugins');
-$bannerImg = getSetting($pdo, 'banner', '');
-$featuredIds = [
-    getSetting($pdo, 'featured1'),
-    getSetting($pdo, 'featured2'),
-    getSetting($pdo, 'featured3')
-];
-
 $search = $_GET['q'] ?? '';
 $latestFields = '(SELECT version FROM plugin_versions v2 WHERE v2.plugin_id=p.id ORDER BY v2.created_at DESC LIMIT 1) AS version,
     (SELECT mc_version FROM plugin_versions v3 WHERE v3.plugin_id=p.id ORDER BY v3.created_at DESC LIMIT 1) AS mc_version';
@@ -22,26 +14,12 @@ if ($search) {
     $stmt = $pdo->query("SELECT p.*, $latestFields FROM plugins p ORDER BY p.created_at DESC");
 }
 $plugins = $stmt->fetchAll();
-$featured = [];
-foreach ($featuredIds as $fid) {
-    if ($fid) {
-        $stmtF = $pdo->prepare("SELECT p.*, $latestFields FROM plugins p WHERE p.id=?");
-        $stmtF->execute([$fid]);
-        $row = $stmtF->fetch();
-        if ($row) $featured[] = $row;
-    }
-}
-if (empty($featured)) {
-    $featured = $pdo->query("SELECT p.*, $latestFields FROM plugins p ORDER BY p.created_at DESC LIMIT 3")->fetchAll();
-}
-$recent = $pdo->query('SELECT p.*, v.version FROM plugin_versions v JOIN plugins p ON v.plugin_id=p.id ORDER BY v.created_at DESC LIMIT 5')->fetchAll();
-$latestUpdate = $pdo->query('SELECT * FROM updates ORDER BY created_at DESC LIMIT 1')->fetch();
 ?>
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title><?= htmlspecialchars($siteTitle) ?></title>
+    <title>Plugins - <?= htmlspecialchars($siteTitle) ?></title>
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
 </head>
 <body class="container py-4">
@@ -57,50 +35,13 @@ $latestUpdate = $pdo->query('SELECT * FROM updates ORDER BY created_at DESC LIMI
         </div>
     </div>
 </nav>
-
-<?php if ($bannerImg): ?>
-<div class="mb-4">
-    <img src="<?= htmlspecialchars($bannerImg) ?>" class="img-fluid w-100" alt="Banner">
-</div>
-<?php endif; ?>
-
+<h1>Plugins</h1>
 <div class="mb-4">
     <form class="d-flex" method="get">
         <input class="form-control me-2" type="search" name="q" placeholder="Search" value="<?= htmlspecialchars($search) ?>">
         <button class="btn btn-outline-success" type="submit">Search</button>
     </form>
 </div>
-
-<div class="mb-4 p-4 bg-light">
-    <h2>Featured</h2>
-    <div class="row">
-        <?php foreach ($featured as $f): ?>
-        <div class="col-md-4">
-            <h5><a href="plugin.php?id=<?= $f['id'] ?>"><?= htmlspecialchars($f['name']) ?></a></h5>
-            <p><?= htmlspecialchars(substr($f['description'],0,100)) ?>...</p>
-        </div>
-        <?php endforeach; ?>
-    </div>
-</div>
-
-<?php if ($latestUpdate): ?>
-<div id="updates" class="mb-4">
-    <h2>Latest update</h2>
-    <h4><?= htmlspecialchars($latestUpdate['title']) ?></h4>
-    <p><?= nl2br(htmlspecialchars(substr($latestUpdate['content'],0,200))) ?></p>
-</div>
-<?php endif; ?>
-
-<div class="mb-4">
-    <h2>Recently updated Plugins</h2>
-    <ul>
-        <?php foreach ($recent as $r): ?>
-            <li><a href="plugin.php?id=<?= $r['id'] ?>"><?= htmlspecialchars($r['name']) ?></a> (<?= htmlspecialchars($r['version']) ?>)</li>
-        <?php endforeach; ?>
-    </ul>
-</div>
-
-<h2>All Plugins</h2>
 <table class="table">
     <thead>
         <tr><th>Name</th><th>Version</th><th>MC Version</th><th>Description</th><th></th></tr>
@@ -112,12 +53,11 @@ $latestUpdate = $pdo->query('SELECT * FROM updates ORDER BY created_at DESC LIMI
             <td><?= htmlspecialchars($p['version']) ?></td>
             <td><?= htmlspecialchars($p['mc_version']) ?></td>
             <td><?= nl2br(htmlspecialchars($p['description'])) ?></td>
-            <td><a class="btn btn-primary" href="download.php?id=<?= $p['id'] ?>">Download</a></td>
+            <td><a class="btn btn-primary" href="plugin.php?id=<?= $p['id'] ?>">View</a></td>
         </tr>
         <?php endforeach; ?>
     </tbody>
 </table>
-
 <footer class="text-center mt-4">&copy; <?= date('Y') ?> <?= htmlspecialchars($siteTitle) ?></footer>
 </body>
 </html>

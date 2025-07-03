@@ -53,9 +53,13 @@ if (isset($_SESSION['admin'])) {
 
     if (isset($_POST['action']) && $_POST['action'] === 'save_config') {
         setSetting($pdo, 'site_title', $_POST['site_title']);
-        setSetting($pdo, 'logo', $_POST['logo']);
-        setSetting($pdo, 'favicon', $_POST['favicon']);
-        setSetting($pdo, 'banner', $_POST['banner']);
+        foreach (['logo_file' => 'logo', 'favicon_file' => 'favicon', 'banner_file' => 'banner'] as $f => $k) {
+            if (isset($_FILES[$f]) && $_FILES[$f]['error'] === UPLOAD_ERR_OK) {
+                $path = 'uploads/'.time().'_'.basename($_FILES[$f]['name']);
+                move_uploaded_file($_FILES[$f]['tmp_name'], $path);
+                setSetting($pdo, $k, $path);
+            }
+        }
         setSetting($pdo, 'featured1', $_POST['featured1']);
         setSetting($pdo, 'featured2', $_POST['featured2']);
         setSetting($pdo, 'featured3', $_POST['featured3']);
@@ -64,8 +68,8 @@ if (isset($_SESSION['admin'])) {
     }
 
     if (isset($_POST['action']) && $_POST['action'] === 'edit_plugin') {
-        $stmt = $pdo->prepare('UPDATE plugins SET name=?, version=?, mc_version=?, description=? WHERE id=?');
-        $stmt->execute([$_POST['name'], $_POST['version'], implode(',', $_POST['mc_version']), $_POST['description'], $_POST['id']]);
+        $stmt = $pdo->prepare('UPDATE plugins SET name=?, description=? WHERE id=?');
+        $stmt->execute([$_POST['name'], $_POST['description'], $_POST['id']]);
         header('Location: admin.php#plugins');
         exit;
     }
@@ -121,7 +125,15 @@ if (!isset($_SESSION['admin'])): ?>
 <hr>
 <h2 id="plugins">Plugin upload</h2>
 <form id="uploadForm" enctype="multipart/form-data">
-    <div class="mb-2"><input class="form-control" name="name" placeholder="Name" required></div>
+    <div class="mb-2">
+        <select class="form-select" name="plugin_id">
+            <option value="0">New plugin</option>
+            <?php foreach($pdo->query('SELECT id,name FROM plugins ORDER BY name') as $pl): ?>
+            <option value="<?= $pl['id'] ?>"><?= htmlspecialchars($pl['name']) ?></option>
+            <?php endforeach; ?>
+        </select>
+    </div>
+    <div class="mb-2"><input class="form-control" name="name" placeholder="Name"></div>
     <div class="mb-2"><input class="form-control" name="version" placeholder="Version" required></div>
     <div class="mb-2">
         <select class="form-select" name="mc_version[]" multiple required>
@@ -130,7 +142,7 @@ if (!isset($_SESSION['admin'])): ?>
             <?php endfor; ?>
         </select>
     </div>
-    <div class="mb-2"><textarea class="form-control" name="description" placeholder="Description" required></textarea></div>
+    <div class="mb-2"><textarea class="form-control" id="pluginDesc" name="description" placeholder="Description"></textarea></div>
     <div class="mb-2"><input type="file" name="file" accept=".jar" required></div>
     <div class="progress mb-2"><div id="bar" class="progress-bar" style="width:0%"></div></div>
     <button class="btn btn-primary" type="submit">Upload</button>
@@ -148,16 +160,7 @@ if (!isset($_SESSION['admin'])): ?>
     <input type="hidden" name="action" value="edit_plugin">
     <input type="hidden" name="id" value="<?= $edit['id'] ?>">
     <div class="mb-2"><input class="form-control" name="name" value="<?= htmlspecialchars($edit['name']) ?>" required></div>
-    <div class="mb-2"><input class="form-control" name="version" value="<?= htmlspecialchars($edit['version']) ?>" required></div>
-    <div class="mb-2">
-        <select class="form-select" name="mc_version[]" multiple required>
-            <?php $sel = explode(',', $edit['mc_version']);
-            for($v=16;$v<=21;$v++): $ver="1.".$v; ?>
-            <option value="<?= $ver ?>" <?= in_array($ver,$sel)?'selected':'' ?>><?= $ver ?></option>
-            <?php endfor; ?>
-        </select>
-    </div>
-    <div class="mb-2"><textarea class="form-control" name="description" required><?= htmlspecialchars($edit['description']) ?></textarea></div>
+    <div class="mb-2"><textarea class="form-control" id="pluginEditDesc" name="description" required><?= htmlspecialchars($edit['description']) ?></textarea></div>
     <button class="btn btn-primary" type="submit">Save</button>
 </form>
 <?php endif; endif; ?>
@@ -168,7 +171,10 @@ if (!isset($_SESSION['admin'])): ?>
 <thead><tr><th>Name</th><th>Version</th><th>Downloads</th><th></th></tr></thead>
 <tbody>
 <?php
-$stmt = $pdo->query('SELECT p.*, (SELECT COUNT(*) FROM downloads d WHERE d.plugin_id=p.id) as dl FROM plugins p');
+$stmt = $pdo->query('SELECT p.id,p.name,
+    (SELECT version FROM plugin_versions v WHERE v.plugin_id=p.id ORDER BY created_at DESC LIMIT 1) as version,
+    (SELECT COUNT(*) FROM downloads d JOIN plugin_versions v2 ON d.version_id=v2.id WHERE v2.plugin_id=p.id) as dl
+    FROM plugins p');
 foreach ($stmt as $row) {
     echo '<tr><td>'.htmlspecialchars($row['name']).'</td><td>'.htmlspecialchars($row['version']).'</td><td>'.$row['dl'].'</td><td><a class="btn btn-sm btn-secondary me-1" href="admin.php?edit_plugin='.$row['id'].'#plugins">Edit</a><a class="btn btn-sm btn-danger" href="admin.php?del_plugin='.$row['id'].'">Delete</a></td></tr>';
 }
@@ -186,15 +192,36 @@ foreach ($stmt as $row) {
     $featured2 = getSetting($pdo,'featured2');
     $featured3 = getSetting($pdo,'featured3');
 ?>
-<form method="post" class="mb-3">
+<form method="post" class="mb-3" enctype="multipart/form-data">
     <input type="hidden" name="action" value="save_config">
     <div class="mb-2"><input class="form-control" name="site_title" value="<?= htmlspecialchars($site_title) ?>" placeholder="Site title"></div>
-    <div class="mb-2"><input class="form-control" name="logo" value="<?= htmlspecialchars($logo) ?>" placeholder="Logo URL"></div>
-    <div class="mb-2"><input class="form-control" name="favicon" value="<?= htmlspecialchars($favicon) ?>" placeholder="Favicon URL"></div>
-    <div class="mb-2"><input class="form-control" name="banner" value="<?= htmlspecialchars($banner) ?>" placeholder="Banner image URL"></div>
-    <div class="mb-2"><input class="form-control" name="featured1" value="<?= htmlspecialchars($featured1) ?>" placeholder="Featured plugin ID 1"></div>
-    <div class="mb-2"><input class="form-control" name="featured2" value="<?= htmlspecialchars($featured2) ?>" placeholder="Featured plugin ID 2"></div>
-    <div class="mb-2"><input class="form-control" name="featured3" value="<?= htmlspecialchars($featured3) ?>" placeholder="Featured plugin ID 3"></div>
+    <div class="mb-2">Logo: <input type="file" name="logo_file" class="form-control"></div>
+    <div class="mb-2">Favicon: <input type="file" name="favicon_file" class="form-control"></div>
+    <div class="mb-2">Banner: <input type="file" name="banner_file" class="form-control"></div>
+    <div class="mb-2">
+        <select class="form-select" name="featured1">
+            <option value="">-- Featured plugin 1 --</option>
+            <?php foreach($pdo->query('SELECT id,name FROM plugins ORDER BY name') as $pl): ?>
+            <option value="<?= $pl['id'] ?>" <?= $featured1==$pl['id']?'selected':'' ?>><?= htmlspecialchars($pl['name']) ?></option>
+            <?php endforeach; ?>
+        </select>
+    </div>
+    <div class="mb-2">
+        <select class="form-select" name="featured2">
+            <option value="">-- Featured plugin 2 --</option>
+            <?php foreach($pdo->query('SELECT id,name FROM plugins ORDER BY name') as $pl): ?>
+            <option value="<?= $pl['id'] ?>" <?= $featured2==$pl['id']?'selected':'' ?>><?= htmlspecialchars($pl['name']) ?></option>
+            <?php endforeach; ?>
+        </select>
+    </div>
+    <div class="mb-2">
+        <select class="form-select" name="featured3">
+            <option value="">-- Featured plugin 3 --</option>
+            <?php foreach($pdo->query('SELECT id,name FROM plugins ORDER BY name') as $pl): ?>
+            <option value="<?= $pl['id'] ?>" <?= $featured3==$pl['id']?'selected':'' ?>><?= htmlspecialchars($pl['name']) ?></option>
+            <?php endforeach; ?>
+        </select>
+    </div>
     <button class="btn btn-primary" type="submit">Save</button>
 </form>
 <hr>
@@ -258,6 +285,12 @@ fetch('stats.php').then(r=>r.json()).then(data=>{
 });
 if(document.getElementById('updateContent')) {
     $('#updateContent').summernote({height:200});
+}
+if(document.getElementById('pluginDesc')) {
+    $('#pluginDesc').summernote({height:150});
+}
+if(document.getElementById('pluginEditDesc')) {
+    $('#pluginEditDesc').summernote({height:150});
 }
 </script>
 </body>

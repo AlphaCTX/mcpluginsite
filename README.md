@@ -5,7 +5,7 @@ This project is a simple PHP/MySQL web application that allows an administrator 
 ## Features
 
 - **Admin login** with a fixed username and password defined in `config.php`.
-- **Plugin management** where the admin can upload plugins, edit details and remove entries. Minecraft versions 1.16–1.21 can be selected per upload.
+- **Plugin management** with rich text descriptions. Existing plugins can receive new versions and each version supports Minecraft 1.16–1.21.
 - **Update posts** section with rich text editing to publish news that appears on the home page.
 - **Public plugin listing** with search capability and download tracking.
 - **Download statistics** chart on the admin dashboard.
@@ -26,13 +26,20 @@ This project is a simple PHP/MySQL web application that allows an administrator 
 
 ## Database
 
-Run the queries in `schema.sql` to create the database schema. It contains the tables `plugins`, `downloads`, `updates` and `settings`.
+Run the queries in `schema.sql` to create the database schema. It contains the tables `plugins`, `plugin_versions`, `downloads`, `updates` and `settings`.
 
 ## Configuration
 
 Copy `config.sample.php` to `config.php` and adjust the database credentials and admin login details.
-Use the **Site config** section in the admin dashboard to change the site title, logo, favicon, banner image and featured plugins.
+Use the **Site config** section in the admin dashboard to change the site title and upload a logo, favicon or banner image. Featured plugins can be chosen from the existing list.
 
 ## Notes
 
 This project is intentionally minimal and meant as a starting point. Feel free to extend it with additional features such as version management, site configuration options or a dedicated plugin page as described in the comments within the code.
+
+### Site layout
+- **Top bar** with links to Home, Plugins and Updates
+- **Banner** image with a "Featured" block showing three selected plugins
+- **Latest update** section showing the newest news post
+- **Recently updated** list of the five newest plugin versions
+- **Footer** with site title and year
