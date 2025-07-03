@@ -19,10 +19,10 @@ $latestFields = '(SELECT version FROM plugin_versions v2 WHERE v2.plugin_id=p.id
 if ($search) {
     $stmt = $pdo->prepare("SELECT p.*, $latestFields FROM plugins p LEFT JOIN plugin_versions v ON p.id=v.plugin_id WHERE (p.name LIKE ? OR v.version LIKE ? OR v.mc_version LIKE ?) GROUP BY p.id ORDER BY p.created_at DESC");
     $stmt->execute(['%'.$search.'%','%'.$search.'%','%'.$search.'%']);
+    $plugins = $stmt->fetchAll();
 } else {
-    $stmt = $pdo->query("SELECT p.*, $latestFields FROM plugins p ORDER BY p.created_at DESC");
+    $plugins = $pdo->query("SELECT p.*, $latestFields FROM plugins p ORDER BY p.created_at DESC LIMIT 3")->fetchAll();
 }
-$plugins = $stmt->fetchAll();
 $featured = [];
 foreach ($featuredIds as $fid) {
     if ($fid) {
@@ -35,7 +35,7 @@ foreach ($featuredIds as $fid) {
 if (empty($featured)) {
     $featured = $pdo->query("SELECT p.*, $latestFields FROM plugins p ORDER BY p.created_at DESC LIMIT 3")->fetchAll();
 }
-$recent = $pdo->query('SELECT p.*, v.version FROM plugin_versions v JOIN plugins p ON v.plugin_id=p.id ORDER BY v.created_at DESC LIMIT 5')->fetchAll();
+$recent = $pdo->query("SELECT p.*, v.version, v.created_at FROM plugins p JOIN plugin_versions v ON v.id = (SELECT id FROM plugin_versions v2 WHERE v2.plugin_id=p.id ORDER BY v2.created_at DESC LIMIT 1) ORDER BY v.created_at DESC LIMIT 5")->fetchAll();
 $latestUpdate = $pdo->query('SELECT * FROM updates ORDER BY created_at DESC LIMIT 1')->fetch();
 ?>
 <!DOCTYPE html>
@@ -45,7 +45,7 @@ $latestUpdate = $pdo->query('SELECT * FROM updates ORDER BY created_at DESC LIMI
     <title><?= htmlspecialchars($siteTitle) ?></title>
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
 <style>
-.page-bg{background:linear-gradient(#5d8e76,#436b58);padding-top:70px;}
+.page-bg{background:linear-gradient(#5d8e76,#436b58);padding-top:66px;}
 .content-box{background:#fff;background:rgba(255,255,255,0.95);box-shadow:0 0 10px rgba(0,0,0,0.2);border-radius:.5rem;transition:box-shadow .3s;}
 .content-box:hover{box-shadow:0 0 20px rgba(0,0,0,0.3);}
 .banner-img{width:100%;height:300px;object-fit:cover;}
@@ -63,6 +63,7 @@ $latestUpdate = $pdo->query('SELECT * FROM updates ORDER BY created_at DESC LIMI
         </a>
         <div class="collapse navbar-collapse">
             <ul class="navbar-nav me-auto mb-2 mb-lg-0">
+                <li class="nav-item"><a class="nav-link" href="index.php">Home</a></li>
                 <li class="nav-item"><a class="nav-link" href="plugins.php">Plugins</a></li>
                 <li class="nav-item"><a class="nav-link" href="updates.php">Updates</a></li>
             </ul>
@@ -71,9 +72,9 @@ $latestUpdate = $pdo->query('SELECT * FROM updates ORDER BY created_at DESC LIMI
     </div>
 </nav>
 
-<div class="container">
 
 <?php if ($bannerImg): ?>
+<div class="container-fluid px-0">
 <div class="mb-4 position-relative">
     <img src="<?= htmlspecialchars($bannerImg) ?>" class="banner-img" alt="Banner">
     <div class="position-absolute top-50 start-50 translate-middle">
@@ -94,6 +95,8 @@ $latestUpdate = $pdo->query('SELECT * FROM updates ORDER BY created_at DESC LIMI
         </div>
     </div>
 </div>
+</div>
+<div class="container">
 <?php endif; ?>
 
 <div class="content-box p-4 mb-4">
@@ -101,22 +104,34 @@ $latestUpdate = $pdo->query('SELECT * FROM updates ORDER BY created_at DESC LIMI
 
 <?php if ($latestUpdate): ?>
 <div id="updates" class="mb-4">
-    <h2>Latest update</h2>
-    <h4><?= htmlspecialchars($latestUpdate['title']) ?></h4>
-    <div><?= $latestUpdate['content'] ?></div>
+    <div class="card">
+        <div class="card-body">
+            <h2 class="card-title"><?= htmlspecialchars($latestUpdate['title']) ?></h2>
+            <div class="card-text mb-2"><?= $latestUpdate['content'] ?></div>
+            <small class="text-muted"><?= $latestUpdate['created_at'] ?></small>
+        </div>
+    </div>
 </div>
 <?php endif; ?>
 
 <div class="mb-4">
     <h2>Recently updated Plugins</h2>
-    <ul>
+    <ul class="list-group">
         <?php foreach ($recent as $r): ?>
-            <li><a href="plugin.php?id=<?= $r['id'] ?>"><?= htmlspecialchars($r['name']) ?></a> (<?= htmlspecialchars($r['version']) ?>)</li>
+        <li class="list-group-item d-flex align-items-center">
+            <?php if($r['logo']): ?>
+            <img src="<?= htmlspecialchars($r['logo']) ?>" alt="logo" style="height:40px;" class="me-2">
+            <?php endif; ?>
+            <div>
+                <a class="fw-bold text-decoration-none" href="plugin.php?id=<?= $r['id'] ?>"><?= htmlspecialchars($r['name']) ?></a>
+                <span class="text-muted">(<?= htmlspecialchars($r['version']) ?>)</span>
+            </div>
+        </li>
         <?php endforeach; ?>
     </ul>
 </div>
 
-<h2>All Plugins</h2>
+<h2><?= $search ? 'Search results' : 'Latest Plugins' ?></h2>
 <table class="table">
     <thead>
         <tr><th>Name</th><th>Version</th><th>MC Version</th><th>Description</th><th></th></tr>

@@ -13,7 +13,7 @@ $updates = $pdo->query('SELECT * FROM updates ORDER BY created_at DESC')->fetchA
     <title>Updates - <?= htmlspecialchars($siteTitle) ?></title>
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
     <style>
-    .page-bg{background:linear-gradient(#5d8e76,#436b58);padding-top:70px;}
+    .page-bg{background:linear-gradient(#5d8e76,#436b58);padding-top:66px;}
     .content-box{background:#fff;background:rgba(255,255,255,0.95);box-shadow:0 0 10px rgba(0,0,0,0.2);border-radius:.5rem;transition:box-shadow .3s;}
     .content-box:hover{box-shadow:0 0 20px rgba(0,0,0,0.3);}
     .navbar.fixed-top{box-shadow:0 0 5px rgba(0,0,0,0.2);}
@@ -22,13 +22,15 @@ $updates = $pdo->query('SELECT * FROM updates ORDER BY created_at DESC')->fetchA
 <body class="py-4 page-bg">
 <nav class="navbar navbar-expand-lg navbar-light bg-light fixed-top">
     <div class="container-fluid">
-        <a class="navbar-brand" href="index.php">
+        <a class="navbar-brand d-flex align-items-center" href="index.php">
             <?php if ($logoImg): ?>
             <img src="<?= htmlspecialchars($logoImg) ?>" alt="Logo" style="height:40px;">
-            <?php else: ?>Home<?php endif; ?>
+            <?php endif; ?>
+            <span class="ms-2 fw-bold text-dark"><?= htmlspecialchars($siteTitle) ?></span>
         </a>
         <div class="collapse navbar-collapse">
             <ul class="navbar-nav me-auto mb-2 mb-lg-0">
+                <li class="nav-item"><a class="nav-link" href="index.php">Home</a></li>
                 <li class="nav-item"><a class="nav-link" href="plugins.php">Plugins</a></li>
                 <li class="nav-item"><a class="nav-link" href="updates.php">Updates</a></li>
             </ul>

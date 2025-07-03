@@ -55,7 +55,7 @@ function filterMC(v){
     document.querySelectorAll('#downloads tbody tr[data-id]').forEach(tr=>{
         if(!v || tr.dataset.mc.includes(v)) tr.style.display=''; else tr.style.display='none';
     });
-    document.querySelectorAll('#downloads tbody tr.collapse').forEach(c=>c.classList.remove('show'));
+    document.querySelectorAll('#downloads tbody div.collapse').forEach(c=>c.classList.remove('show'));
     highlightLatest();
 }
 document.addEventListener('DOMContentLoaded',highlightLatest);
@@ -72,6 +72,7 @@ document.addEventListener('DOMContentLoaded',highlightLatest);
         </a>
         <div class="collapse navbar-collapse">
             <ul class="navbar-nav me-auto mb-2 mb-lg-0">
+                <li class="nav-item"><a class="nav-link" href="index.php">Home</a></li>
                 <li class="nav-item"><a class="nav-link" href="plugins.php">Plugins</a></li>
                 <li class="nav-item"><a class="nav-link" href="updates.php">Updates</a></li>
             </ul>
@@ -120,9 +121,11 @@ document.addEventListener('DOMContentLoaded',highlightLatest);
             </td>
         </tr>
         <?php if($row['changelog']): ?>
-        <tr class="collapse" id="log<?= $row['id'] ?>">
+        <tr>
             <td colspan="3" class="bg-light">
-                <?= nl2br(htmlspecialchars($row['changelog'])) ?>
+                <div class="collapse" id="log<?= $row['id'] ?>">
+                    <?= nl2br(htmlspecialchars($row['changelog'])) ?>
+                </div>
             </td>
         </tr>
         <?php endif; ?>
