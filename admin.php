@@ -5,12 +5,13 @@ require 'db.php';
 require 'functions.php';
 $config = include 'config.php';
 $isAjax = isset($_SERVER['HTTP_X_REQUESTED_WITH']);
+$page = $_GET['page'] ?? 'plugins';
 
 // Handle login
 if (isset($_POST['username'], $_POST['password'])) {
     if ($_POST['username'] === $config['admin_user'] && $_POST['password'] === $config['admin_pass']) {
         $_SESSION['admin'] = true;
-        header('Location: admin.php');
+        header('Location: admin.php?page=plugins');
         exit;
     } else {
         $error = 'Invalid login';
@@ -30,21 +31,21 @@ if (isset($_SESSION['admin'])) {
         $stmt = $pdo->prepare('INSERT INTO updates (title, content, created_at) VALUES (?,?,NOW())');
         $stmt->execute([$_POST['title'], $_POST['content']]);
         if ($isAjax) { exit('OK'); }
-        header('Location: admin.php#updates');
+        header('Location: admin.php?page=updates');
         exit;
     }
     if (isset($_POST['action']) && $_POST['action'] === 'edit_update') {
         $stmt = $pdo->prepare('UPDATE updates SET title=?, content=? WHERE id=?');
         $stmt->execute([$_POST['title'], $_POST['content'], $_POST['id']]);
         if ($isAjax) { exit('OK'); }
-        header('Location: admin.php#updates');
+        header('Location: admin.php?page=updates');
         exit;
     }
     if (isset($_GET['del_update'])) {
         $stmt = $pdo->prepare('DELETE FROM updates WHERE id=?');
         $stmt->execute([$_GET['del_update']]);
         if ($isAjax) { exit('OK'); }
-        header('Location: admin.php#updates');
+        header('Location: admin.php?page=updates');
         exit;
     }
 
@@ -52,7 +53,7 @@ if (isset($_SESSION['admin'])) {
         $stmt = $pdo->prepare('DELETE FROM plugins WHERE id=?');
         $stmt->execute([$_GET['del_plugin']]);
         if ($isAjax) { exit('OK'); }
-        header('Location: admin.php#plugins');
+        header('Location: admin.php?page=plugins');
         exit;
     }
 
@@ -69,7 +70,7 @@ if (isset($_SESSION['admin'])) {
         setSetting($pdo, 'featured2', $_POST['featured2']);
         setSetting($pdo, 'featured3', $_POST['featured3']);
         if ($isAjax) { exit('OK'); }
-        header('Location: admin.php#config');
+        header('Location: admin.php?page=config');
         exit;
     }
 
@@ -86,7 +87,7 @@ if (isset($_SESSION['admin'])) {
         $stmt=$pdo->prepare($sql);
         $stmt->execute($params);
         if ($isAjax) { exit('OK'); }
-        header('Location: admin.php#plugins');
+        header('Location: admin.php?page=plugins');
         exit;
     }
 
@@ -99,7 +100,7 @@ if (isset($_SESSION['admin'])) {
         $stmt=$pdo->prepare('INSERT INTO plugins (name,short_description,description,logo,created_at) VALUES (?,?,?,?,NOW())');
         $stmt->execute([$_POST['name'],$_POST['short_description'],$_POST['description'],$logo]);
         if ($isAjax) { exit('OK'); }
-        header('Location: admin.php#plugins');
+        header('Location: admin.php?page=plugins');
         exit;
     }
 
@@ -107,7 +108,7 @@ if (isset($_SESSION['admin'])) {
         $stmt=$pdo->prepare('UPDATE plugin_versions SET version=?, mc_version=?, changelog=? WHERE id=?');
         $stmt->execute([$_POST['version'],$_POST['mc_version'],$_POST['changelog'],$_POST['id']]);
         if($isAjax){exit('OK');}
-        header('Location: admin.php?manage_plugin='.$_POST['plugin_id'].'#plugins');
+        header('Location: admin.php?page=plugins&manage_plugin='.$_POST['plugin_id']);
         exit;
     }
 
@@ -116,7 +117,7 @@ if (isset($_SESSION['admin'])) {
         $stmt->execute([$_GET['del_version']]);
         if($isAjax){exit('OK');}
         $pid=$_GET['plugin']??'';
-        header('Location: admin.php?manage_plugin='.$pid.'#plugins');
+        header('Location: admin.php?page=plugins&manage_plugin='.$pid);
         exit;
     }
 }
@@ -129,14 +130,19 @@ if (!isset($_SESSION['admin'])): ?>
     <title>Admin Login</title>
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
 </head>
-<body class="container py-4" style="background-color:#5d8e76;">
-<h1>Admin Login</h1>
-<?php if (!empty($error)) echo '<div class="alert alert-danger">'.$error.'</div>'; ?>
-<form method="post">
-    <div class="mb-3"><input class="form-control" name="username" placeholder="Username"></div>
-    <div class="mb-3"><input class="form-control" type="password" name="password" placeholder="Password"></div>
-    <button class="btn btn-primary" type="submit">Login</button>
-</form>
+<body class="d-flex justify-content-center align-items-center vh-100" style="background-color:#5d8e76;">
+<div class="card p-4" style="min-width:300px;">
+    <h2 class="mb-3 text-center">Admin Login</h2>
+    <?php if (!empty($error)) echo '<div class="alert alert-danger">'.$error.'</div>'; ?>
+    <form method="post">
+        <div class="mb-3"><input class="form-control" name="username" placeholder="Username"></div>
+        <div class="mb-3"><input class="form-control" type="password" name="password" placeholder="Password"></div>
+        <div class="d-flex justify-content-between">
+            <a class="btn btn-secondary" href="index.php">Back</a>
+            <button class="btn btn-primary" type="submit">Login</button>
+        </div>
+    </form>
+</div>
 </body>
 </html>
 <?php else:
@@ -164,9 +170,10 @@ $logo = getSetting($pdo, 'logo');
         </a>
         <div class="collapse navbar-collapse">
             <ul class="navbar-nav me-auto mb-2 mb-lg-0">
-                <li class="nav-item"><a class="nav-link" href="#updates">Updates</a></li>
-                <li class="nav-item"><a class="nav-link" href="#plugins">Plugins</a></li>
-                <li class="nav-item"><a class="nav-link" href="#config">Site config</a></li>
+                <li class="nav-item"><a class="nav-link" href="admin.php?page=updates">Updates</a></li>
+                <li class="nav-item"><a class="nav-link" href="admin.php?page=plugins">Plugins</a></li>
+                <li class="nav-item"><a class="nav-link" href="admin.php?page=config">Site config</a></li>
+                <li class="nav-item"><a class="nav-link" href="admin.php?page=stats">Statistics</a></li>
                 <li class="nav-item"><a class="nav-link" href="admin.php?logout=1">Logout</a></li>
             </ul>
         </div>
@@ -175,7 +182,8 @@ $logo = getSetting($pdo, 'logo');
 <div class="bg-light p-4">
 <h1>Welcome, admin</h1>
 <hr>
-<h2 id="plugins">Plugins</h2>
+<?php if($page==='plugins'): ?>
+<h2>Plugins</h2>
 <h3>Add plugin</h3>
 <form method="post" class="mb-3 ajax" enctype="multipart/form-data">
     <input type="hidden" name="action" value="add_plugin">
@@ -235,7 +243,7 @@ $logo = getSetting($pdo, 'logo');
     $vs=$pdo->prepare('SELECT * FROM plugin_versions WHERE plugin_id=? ORDER BY created_at DESC');
     $vs->execute([$pl['id']]);
     foreach($vs as $v){
-        echo '<tr><td>'.htmlspecialchars($v['version']).'</td><td>'.htmlspecialchars($v['mc_version']).'</td><td>'.htmlspecialchars($v['changelog']).'</td><td><a class="btn btn-sm btn-secondary me-1" href="admin.php?manage_plugin='.$pl['id'].'&edit_version='.$v['id'].'#plugins">Edit</a><a class="btn btn-sm btn-danger" href="admin.php?del_version='.$v['id'].'&plugin='.$pl['id'].'">Delete</a></td></tr>';
+        echo '<tr><td>'.htmlspecialchars($v['version']).'</td><td>'.htmlspecialchars($v['mc_version']).'</td><td>'.htmlspecialchars($v['changelog']).'</td><td><a class="btn btn-sm btn-secondary me-1" href="admin.php?page=plugins&manage_plugin='.$pl['id'].'&edit_version='.$v['id'].'">Edit</a><a class="btn btn-sm btn-danger" href="admin.php?del_version='.$v['id'].'&plugin='.$pl['id'].'">Delete</a></td></tr>';
     }
 ?>
 </tbody>
@@ -258,21 +266,7 @@ $logo = getSetting($pdo, 'logo');
 <?php endif; endif; ?>
 <?php endif; endif; ?>
 
-<?php if(isset($_GET['edit_plugin'])): 
-    $stmt = $pdo->prepare('SELECT * FROM plugins WHERE id=?');
-    $stmt->execute([$_GET['edit_plugin']]);
-    $edit = $stmt->fetch();
-    if($edit): ?>
-<hr>
-<h2>Edit Plugin</h2>
-<form method="post">
-    <input type="hidden" name="action" value="edit_plugin">
-    <input type="hidden" name="id" value="<?= $edit['id'] ?>">
-    <div class="mb-2"><input class="form-control" name="name" value="<?= htmlspecialchars($edit['name']) ?>" required></div>
-    <div class="mb-2"><textarea class="form-control" id="pluginEditDesc" name="description" required><?= htmlspecialchars($edit['description']) ?></textarea></div>
-    <button class="btn btn-primary" type="submit">Save</button>
-</form>
-<?php endif; endif; ?>
+
 
 <hr>
 <h2 class="mt-4">Plugins</h2>
@@ -285,13 +279,15 @@ $stmt = $pdo->query('SELECT p.id,p.name,
     (SELECT COUNT(*) FROM downloads d JOIN plugin_versions v2 ON d.version_id=v2.id WHERE v2.plugin_id=p.id) as dl
     FROM plugins p');
 foreach ($stmt as $row) {
-    echo '<tr><td>'.htmlspecialchars($row['name']).'</td><td>'.htmlspecialchars($row['version']).'</td><td>'.$row['dl'].'</td><td><a class="btn btn-sm btn-secondary me-1" href="admin.php?edit_plugin='.$row['id'].'#plugins">Edit</a><a class="btn btn-sm btn-secondary me-1" href="admin.php?manage_plugin='.$row['id'].'#plugins">Versions</a><a class="btn btn-sm btn-danger" href="admin.php?del_plugin='.$row['id'].'">Delete</a></td></tr>';
+    echo '<tr><td>'.htmlspecialchars($row['name']).'</td><td>'.htmlspecialchars($row['version']).'</td><td>'.$row['dl'].'</td><td><a class="btn btn-sm btn-secondary me-1" href="admin.php?page=plugins&edit_plugin='.$row['id'].'">Edit</a><a class="btn btn-sm btn-secondary me-1" href="admin.php?page=plugins&manage_plugin='.$row['id'].'">Versions</a><a class="btn btn-sm btn-danger" href="admin.php?del_plugin='.$row['id'].'">Delete</a></td></tr>';
 }
 ?>
 </tbody>
 </table>
+<?php endif; ?>
 <hr>
-<h2 id="config" class="mt-4">Site config</h2>
+<?php elseif($page==='config'): ?>
+<h2>Site config</h2>
 <?php
     $site_title = getSetting($pdo,'site_title');
     $logo = getSetting($pdo,'logo');
@@ -331,10 +327,12 @@ foreach ($stmt as $row) {
             <?php endforeach; ?>
         </select>
     </div>
-    <button class="btn btn-primary" type="submit">Save</button>
+<button class="btn btn-primary" type="submit">Save</button>
 </form>
+<?php endif; ?>
 <hr>
-<h2 id="updates" class="mt-4">Updates</h2>
+<?php elseif($page==='updates'): ?>
+<h2>Updates</h2>
 <?php if(isset($_GET['edit_update'])):
     $stmt = $pdo->prepare('SELECT * FROM updates WHERE id=?');
     $stmt->execute([$_GET['edit_update']]);
@@ -361,13 +359,16 @@ foreach ($stmt as $row) {
     <?php
     $updates = $pdo->query('SELECT * FROM updates ORDER BY created_at DESC')->fetchAll();
     foreach ($updates as $u) {
-        echo '<tr><td>'.htmlspecialchars($u['title']).'</td><td>'.$u['created_at'].'</td><td><a href="admin.php?edit_update='.$u['id'].'#updates" class="btn btn-sm btn-secondary me-1">Edit</a><a href="admin.php?del_update='.$u['id'].'" class="btn btn-sm btn-danger">Delete</a></td></tr>';
+        echo '<tr><td>'.htmlspecialchars($u['title']).'</td><td>'.$u['created_at'].'</td><td><a href="admin.php?page=updates&edit_update='.$u['id'].'" class="btn btn-sm btn-secondary me-1">Edit</a><a href="admin.php?del_update='.$u['id'].'" class="btn btn-sm btn-danger">Delete</a></td></tr>';
     }
     ?>
     </tbody>
 </table>
+<?php endif; ?>
+<?php elseif($page==='stats'): ?>
 <h2>Download statistics</h2>
 <canvas id="chart" width="400" height="200"></canvas>
+<?php endif; ?>
 <script>
 // Upload with progress bar
 const vform=document.getElementById('versionForm');

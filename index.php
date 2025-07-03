@@ -67,8 +67,9 @@ $latestUpdate = $pdo->query('SELECT * FROM updates ORDER BY created_at DESC LIMI
 <?php if ($bannerImg): ?>
 <div class="mb-4 position-relative">
     <img src="<?= htmlspecialchars($bannerImg) ?>" class="img-fluid w-100" alt="Banner">
-    <div class="position-absolute top-0 start-0 end-0 bottom-0 d-flex align-items-center justify-content-center" style="background-color:rgba(255,255,255,0.7);">
-        <div id="featuredCarousel" class="carousel slide w-75" data-bs-ride="carousel">
+    <div class="position-absolute top-50 start-50 translate-middle">
+        <div class="bg-white bg-opacity-75 p-3 rounded">
+        <div id="featuredCarousel" class="carousel slide" data-bs-ride="carousel">
             <div class="carousel-inner">
                 <?php foreach($featured as $i => $f): ?>
                 <div class="carousel-item <?= $i===0?'active':'' ?> text-center">
@@ -81,16 +82,12 @@ $latestUpdate = $pdo->query('SELECT * FROM updates ORDER BY created_at DESC LIMI
             <button class="carousel-control-prev" type="button" data-bs-target="#featuredCarousel" data-bs-slide="prev"><span class="carousel-control-prev-icon"></span></button>
             <button class="carousel-control-next" type="button" data-bs-target="#featuredCarousel" data-bs-slide="next"><span class="carousel-control-next-icon"></span></button>
         </div>
+        </div>
     </div>
 </div>
 <?php endif; ?>
 
-<div class="mb-4">
-    <form class="d-flex" method="get">
-        <input class="form-control me-2" type="search" name="q" placeholder="Search" value="<?= htmlspecialchars($search) ?>">
-        <button class="btn btn-outline-success" type="submit">Search</button>
-    </form>
-</div>
+<div class="bg-light p-4 rounded mb-4">
 
 
 <?php if ($latestUpdate): ?>
@@ -127,6 +124,7 @@ $latestUpdate = $pdo->query('SELECT * FROM updates ORDER BY created_at DESC LIMI
         <?php endforeach; ?>
     </tbody>
 </table>
+</div>
 
 <footer class="text-center mt-4">&copy; <?= date('Y') ?> <?= htmlspecialchars($siteTitle) ?></footer>
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
