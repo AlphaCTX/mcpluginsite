@@ -2,6 +2,8 @@
 // Admin login and dashboard
 session_start();
 ini_set('display_errors', 1);
+ini_set('upload_max_filesize','50M');
+ini_set('post_max_size','50M');
 error_reporting(E_ALL);
 require 'db.php';
 require 'functions.php';

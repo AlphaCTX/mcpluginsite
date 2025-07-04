@@ -65,6 +65,7 @@ $plugins = $stmt->fetchAll();
         <button class="btn btn-outline-success" type="submit">Search</button>
     </form>
 </div>
+<div class="table-responsive">
 <table class="table">
     <thead>
         <tr><th>Name</th><th>Version</th><th>MC Version</th><th>Description</th><th></th></tr>
@@ -86,6 +87,7 @@ $plugins = $stmt->fetchAll();
         <?php endforeach; ?>
     </tbody>
 </table>
+</div>
 </div>
 </div>
 

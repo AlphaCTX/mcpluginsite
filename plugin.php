@@ -40,6 +40,7 @@ $logoImg = getSetting($pdo, 'logo', '');
     .content-box{background:#fff;background:rgba(255,255,255,0.95);box-shadow:0 0 10px rgba(0,0,0,0.2);border-radius:.5rem;transition:box-shadow .3s;}
     .content-box:hover{box-shadow:0 0 20px rgba(0,0,0,0.3);}
     .navbar.fixed-top{box-shadow:0 0 5px rgba(0,0,0,0.2);}
+    .content-box img{max-width:100%;height:auto;}
     </style>
     <script>
 function showTab(t) {
