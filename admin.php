@@ -2,6 +2,8 @@
 // Admin login and dashboard
 session_start();
 ini_set('display_errors', 1);
+ini_set('upload_max_filesize','50M');
+ini_set('post_max_size','50M');
 error_reporting(E_ALL);
 require 'db.php';
 require 'functions.php';
@@ -161,6 +163,7 @@ if (!isset($_SESSION['admin'])): ?>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>Admin Login</title>
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
     <style>
@@ -199,6 +202,7 @@ $logo = getSetting($pdo, 'logo');
 <html lang="en">
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>Admin Dashboard</title>
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/summernote@0.8.18/dist/summernote-lite.min.css">
@@ -221,7 +225,10 @@ $logo = getSetting($pdo, 'logo');
             <img src="<?= htmlspecialchars($logo) ?>" alt="Logo" style="height:40px;">
             <?php else: ?>Admin<?php endif; ?>
         </a>
-        <div class="collapse navbar-collapse">
+        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+        <div class="collapse navbar-collapse" id="navbarNav">
             <ul class="navbar-nav me-auto mb-2 mb-lg-0">
                 <li class="nav-item"><a class="nav-link" href="admin.php?page=updates">Updates</a></li>
                 <li class="nav-item"><a class="nav-link" href="admin.php?page=plugins">Plugins</a></li>

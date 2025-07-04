@@ -19,7 +19,7 @@ This project is a simple PHP/MySQL web application that allows an administrator 
 - `functions.php` – helpers for site configuration.
 - `admin.php` – administration dashboard for managing plugins and updates.
 - `upload.php` – AJAX endpoint for plugin uploads.
-  Supports files up to 20MB.
+  Supports files up to 50MB.
 - `download.php` – serves jar files and records downloads.
 - `stats.php` – returns JSON statistics for the chart.
 - `db.php` – database connection helper.

@@ -2,8 +2,8 @@
 // Handle plugin upload via AJAX
 session_start();
 require 'db.php';
-ini_set('upload_max_filesize','20M');
-ini_set('post_max_size','20M');
+ini_set('upload_max_filesize','50M');
+ini_set('post_max_size','50M');
 
 if (!isset($_SESSION['admin'])) {
     http_response_code(403);
@@ -31,7 +31,7 @@ if (!$file || $file['error'] !== UPLOAD_ERR_OK) {
 if (pathinfo($file['name'], PATHINFO_EXTENSION) !== 'jar') {
     exit('Only .jar allowed');
 }
-if ($file['size'] > 20 * 1024 * 1024) {
+if ($file['size'] > 50 * 1024 * 1024) {
     exit('File too large');
 }
 
