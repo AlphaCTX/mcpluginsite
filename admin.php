@@ -13,14 +13,41 @@ $config = include 'config.php';
 $isAjax = isset($_SERVER['HTTP_X_REQUESTED_WITH']);
 $page = $_GET['page'] ?? 'plugins';
 
-// Handle login
+$error = '';
+
+// ** HANDLE LOGIN VIA users-TABEL **
 if (isset($_POST['username'], $_POST['password'])) {
-    if ($_POST['username'] === $config['admin_user'] && $_POST['password'] === $config['admin_pass']) {
+    $username = trim($_POST['username']);
+    $password = $_POST['password'];
+
+    // Haal user op uit DB
+    $stmt = $pdo->prepare('SELECT id, username, password FROM users WHERE username = ?');
+    $stmt->execute([$username]);
+    $user = $stmt->fetch();
+
+    if ($user && password_verify($password, $user['password'])) {
+        // Inloggen gelukt
         $_SESSION['admin'] = true;
-        header('Location: admin.php?page=plugins');
-        exit;
+        $_SESSION['user_id'] = $user['id'];
+        $_SESSION['username'] = $user['username'];
+
+        if ($isAjax) {
+            // Voor AJAX: JSON teruggeven
+            header('Content-Type: application/json');
+            echo json_encode(['status' => 'success']);
+            exit;
+        } else {
+            header('Location: admin.php?page=plugins');
+            exit;
+        }
     } else {
-        $error = 'Invalid login';
+        // Ongeldige login
+        $error = 'Ongeldige gebruikersnaam of wachtwoord.';
+        if ($isAjax) {
+            header('Content-Type: application/json', true, 401);
+            echo json_encode(['status' => 'error', 'message' => $error]);
+            exit;
+        }
     }
 }
 

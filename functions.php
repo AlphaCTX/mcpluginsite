@@ -55,7 +55,7 @@ function renderFooter(PDO $pdo) {
     echo '          <h5 class="mb-2">Other links</h5>';
     echo '          <ul class="list-unstyled mb-0">';
     foreach ($links as $l) {
-        echo '<li><a class="text-light" href="' . htmlspecialchars($l['url']) . '">'
+        echo '<li><a class="text-light" target="_blank" href="' . htmlspecialchars($l['url']) . '">'
              . htmlspecialchars($l['label']) . '</a></li>';
     }
     echo '          </ul>';
